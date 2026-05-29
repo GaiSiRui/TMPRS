@@ -90,7 +90,7 @@ def before_summary(args):
         print("492.1")
         if args.calculate_mod == "origin":
             """
-            os.system("plink --bfile " + args.input_file + "  --pheno " + args.input_file + ".pheno --keep " + args.input_file + ".list --geno 0.05 --maf 0.05 --out " + args.input_file + " --logistic hide-covar --covar ./side_information_including_BMI.tab keep-pheno-on-missing-cov")
+            os.system("plink --bfile " + args.input_file + "  --pheno " + args.input_file + ".pheno --keep " + args.input_file + ".list --geno 0.05 --maf 0.05 --out " + args.input_file + " --logistic hide-covar --covar args.covar keep-pheno-on-missing-cov")
             print("492")
             """
             assoc_logistic = pd.read_csv(args.input_file + ".assoc.logistic", sep=r'\s+')
@@ -112,13 +112,13 @@ def before_summary(args):
             snps = assoc.iloc[1, :]
 
         else:
-            os.system("plink --bfile " + args.input_file + "  --pheno " + args.input_file + ".pheno --keep " + args.input_file + ".list --geno 0.05 --maf 0.05 --out " + args.input_file + " --logistic dominant hide-covar --covar ./side_information_including_BMI.tab keep-pheno-on-missing-cov")
+            os.system("plink --bfile " + args.input_file + "  --pheno " + args.input_file + ".pheno --keep " + args.input_file + ".list --geno 0.05 --maf 0.05 --out " + args.input_file + " --logistic dominant hide-covar --covar args.covar keep-pheno-on-missing-cov")
             assoc_logistic = pd.read_csv(args.input_file + ".assoc.logistic", sep=r'\s+')
             assoc_dom = assoc_logistic[assoc_logistic['TEST'] == 'DOM']
-            os.system("plink --bfile " + args.input_file + "  --pheno " + args.input_file + ".pheno --keep " + args.input_file + ".list --geno 0.05 --maf 0.05 --out " + args.input_file + " --logistic recessive hide-covar --covar ./side_information_including_BMI.tab keep-pheno-on-missing-cov")
+            os.system("plink --bfile " + args.input_file + "  --pheno " + args.input_file + ".pheno --keep " + args.input_file + ".list --geno 0.05 --maf 0.05 --out " + args.input_file + " --logistic recessive hide-covar --covar args.covar keep-pheno-on-missing-cov")
             assoc_logistic = pd.read_csv(args.input_file + ".assoc.logistic", sep=r'\s+')
             assoc_rec = assoc_logistic[assoc_logistic['TEST'] == 'REC']
-            os.system("plink --bfile " + args.input_file + "  --pheno " + args.input_file + ".pheno --keep " + args.input_file + ".list --geno 0.05 --maf 0.05 --out " + args.input_file + " --logistic hide-covar --covar ./side_information_including_BMI.tab keep-pheno-on-missing-cov")
+            os.system("plink --bfile " + args.input_file + "  --pheno " + args.input_file + ".pheno --keep " + args.input_file + ".list --geno 0.05 --maf 0.05 --out " + args.input_file + " --logistic hide-covar --covar args.covar keep-pheno-on-missing-cov")
             assoc_logistic = pd.read_csv(args.input_file + ".assoc.logistic", sep=r'\s+')
             assoc_add = assoc_logistic[assoc_logistic['TEST'] == 'ADD']
             assoc_logistic = pd.concat([assoc_dom, assoc_rec, assoc_add])
@@ -155,7 +155,7 @@ def before_summary(args):
     else:
         if args.calculate_mod == "origin":
             """
-            os.system("plink --bfile " + args.input_file + "  --pheno " + args.input_file + ".pheno --keep " + args.input_file + ".list --geno 0.05 --maf 0.05 --out " + args.input_file + " --linear hide-covar --covar ./side_information_including_BMI.tab keep-pheno-on-missing-cov")
+            os.system("plink --bfile " + args.input_file + "  --pheno " + args.input_file + ".pheno --keep " + args.input_file + ".list --geno 0.05 --maf 0.05 --out " + args.input_file + " --linear hide-covar --covar args.covar keep-pheno-on-missing-cov")
             print("492")
             """
             assoc_linear = pd.read_csv(args.input_file + ".assoc.linear", sep=r'\s+')
@@ -177,13 +177,13 @@ def before_summary(args):
             snps = assoc.iloc[1, :]
 
         else:
-            os.system("plink --bfile " + args.input_file + "  --pheno " + args.input_file + ".pheno --keep " + args.input_file + ".list --geno 0.05 --maf 0.05 --out " + args.input_file + " --linear dominant hide-covar --covar ./side_information_including_BMI.tab keep-pheno-on-missing-cov")
+            os.system("plink --bfile " + args.input_file + "  --pheno " + args.input_file + ".pheno --keep " + args.input_file + ".list --geno 0.05 --maf 0.05 --out " + args.input_file + " --linear dominant hide-covar --covar args.covar keep-pheno-on-missing-cov")
             assoc_linear = pd.read_csv(args.input_file + ".assoc.linear", sep=r'\s+')
             assoc_dom = assoc_linear[assoc_linear['TEST'] == 'DOM']
-            os.system("plink --bfile " + args.input_file + "  --pheno " + args.input_file + ".pheno --keep " + args.input_file + ".list --geno 0.05 --maf 0.05 --out " + args.input_file + " --linear recessive hide-covar --covar ./side_information_including_BMI.tab keep-pheno-on-missing-cov")
+            os.system("plink --bfile " + args.input_file + "  --pheno " + args.input_file + ".pheno --keep " + args.input_file + ".list --geno 0.05 --maf 0.05 --out " + args.input_file + " --linear recessive hide-covar --covar args.covar keep-pheno-on-missing-cov")
             assoc_linear = pd.read_csv(args.input_file + ".assoc.linear", sep=r'\s+')
             assoc_rec = assoc_linear[assoc_linear['TEST'] == 'REC']
-            os.system("plink --bfile " + args.input_file + "  --pheno " + args.input_file + ".pheno --keep " + args.input_file + ".list --geno 0.05 --maf 0.05 --out " + args.input_file + " --linear hide-covar --covar ./side_information_including_BMI.tab keep-pheno-on-missing-cov")
+            os.system("plink --bfile " + args.input_file + "  --pheno " + args.input_file + ".pheno --keep " + args.input_file + ".list --geno 0.05 --maf 0.05 --out " + args.input_file + " --linear hide-covar --covar args.covar keep-pheno-on-missing-cov")
             assoc_linear = pd.read_csv(args.input_file + ".assoc.linear", sep=r'\s+')
             assoc_add = assoc_linear[assoc_linear['TEST'] == 'ADD']
             assoc_linear = pd.concat([assoc_dom, assoc_rec, assoc_add])
@@ -245,10 +245,10 @@ def before_summary(args):
         })
 
     if args.calculate_mod == "mean":
-        pheno = pd.read_csv("alzheimer_train.pheno", sep="\s+")
-        covar = pd.read_csv("side_information_including_BMI.tab", sep="\s+")
-        geno_name = pd.read_csv("alzheimer_train.name", header = None , sep="\s+")
-        print(geno_name)
+        pheno = pd.read_csv(args.pheno, sep="\s+")
+        covar = pd.read_csv(args.covar, sep="\s+")
+        geno_name = pd.read_csv(args.input_file + ".bim", header = None , sep="\s+", , usecols=[1])
+        os.system("plink --bfile " + args.input_file + " --recode --out " + args.input_file)
         
         with open('mean.csv', mode='w', newline='') as file:
             writer = csv.writer(file)
@@ -261,7 +261,7 @@ def before_summary(args):
             columns_to_load = ["FID", "IID", target_snp.iloc[0]]
         
             try:
-                geno = pd.read_csv("alzheimer_train.raw", sep="\s+", usecols=columns_to_load)
+                geno = pd.read_csv(args.input_file + ".ped", sep="\s+", usecols=columns_to_load)
         
             except Exception as e:
                 print("error", e)

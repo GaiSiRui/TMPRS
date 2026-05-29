@@ -79,10 +79,16 @@ parser.add_argument("-S", "--summary", help="Calculate from summary data.", acti
 parser.add_argument("-w", "--with_origin", help="Calculate origin model in the same time calculating the other model.", action='store_true')
 parser.add_argument("-K", "--keep-list", help="The list of people keep in all the process. The file need two column, the first one is family ID and the second is individual ID.", type=str)
 parser.add_argument("-C", "--clump", help="Have clumped file.", action = "store_true")
+parser.add_argument("-o", "--covar", help="The file to load covariates from. The file format is the same as for --pheno (optional header line, FID and IID in first two columns, covariates in remaining columns). By default, the main phenotype is set to missing if any covariate is missing.", type=str, required=True)
+parser.add_argument("-p", "--pheno", help="The file to optional header line, FID and IID in first two columns, covariates in remaining columns. Both input file and validation file.", type=str, required=True)
 args = parser.parse_args()
 print(args)
 if "." in args.input_file:
     print("The input file cannot include the character \".\" .")
+    sys.exit(1)
+
+if "." in args.covar:
+    print("The covariants file cannot include the character \".\" .")
     sys.exit(1)
 
 if "." in args.validation_file:
