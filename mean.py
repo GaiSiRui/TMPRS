@@ -2,7 +2,6 @@ import pandas as pd
 import statsmodels.api as sm
 import numpy as np
 import csv
-import gc
 
 pheno = pd.read_csv("alzheimer_train.pheno", sep="\s+")
 covar = pd.read_csv("side_information_including_BMI.tab", sep="\s+")
@@ -33,13 +32,9 @@ for rs_number, rs_name in geno_name.iterrows():
     model = sm.OLS(y, X).fit()
     data["RESIDUAL"] = model.resid
 
-    with open('mean.csv', mode='w', newline='') as file:
+    with open('mean.csv', mode='a', newline='') as file:
         aa_mean_adj = data.loc[np.isclose(data[rs_name], 0.0), 'RESIDUAL'].mean() + y.mean()
         Aa_mean_adj = data.loc[np.isclose(data[rs_name], 1.0), 'RESIDUAL'].mean() + y.mean()
         AA_mean_adj = data.loc[np.isclose(data[rs_name], 2.0), 'RESIDUAL'].mean() + y.mean()
         writer = csv.writer(file)
         writer.writerow([rs_name, aa_mean_adj, Aa_mean_adj, AA_mean_adj])
-        file.close()
-
-    snapshot = tracemalloc.take_snapshot()
-    top_stats = snapshot.statistics('lineno')
