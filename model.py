@@ -277,9 +277,6 @@ def before_summary(args):
             aa_mean_adj = data.loc[np.isclose(data[rs_name], 0.0), 'RESIDUAL'].mean() + y.mean()
             Aa_mean_adj = data.loc[np.isclose(data[rs_name], 1.0), 'RESIDUAL'].mean() + y.mean()
             AA_mean_adj = data.loc[np.isclose(data[rs_name], 2.0), 'RESIDUAL'].mean() + y.mean()
-        
-            snapshot = tracemalloc.take_snapshot()
-            top_stats = snapshot.statistics('lineno')
 
         # 2. 计算 A：较大者除以 add 中第七列的绝对值
         max_sources = np.where(Aa_mean_adj > (AA_mean_adj + aa_mean_adj) / 2, 'dom', 'rec')

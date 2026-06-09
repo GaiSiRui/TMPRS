@@ -3,7 +3,7 @@
 num=0
 logistic="False"
 clumped="False"
-calculate_mod="False"
+calculate_mod="beta"
 filed="False"
 testmod="False"
 time_point=`date +%Y%m%d%H%M%S`
@@ -591,14 +591,14 @@ if [[ $summary == "False" ]];then
                 #rm ${inputfile}_${split_num}.ped ${inputfile}_${split_num}.log ${inputfile}_${split_num}.map
                 paste ${inputfile}_${split_num}.fea_few ${inputfile}.assoc_${split_num} > ${inputfile}_${split_num}.fea
                 echo "601"
-                if [ $calculate_mod = "False" ];then
+                if [ $calculate_mod = "t" ];then
                         echo 101
                         #awk '{label=0;aa_ave=$7;Aa_ave=$4;AA_ave=$1;if(aa_ave>=Aa_ave&&Aa_ave>=AA_ave){if((aa_ave-Aa_ave)*3<(Aa_ave-AA_ave)){label+=4}else if((aa_ave-Aa_ave)*3>=(Aa_ave-AA_ave)&&(aa_ave-Aa_ave)<=(Aa_ave-AA_ave)*3){label+=1}else{label+=2}}else if(aa_ave>=AA_ave&&AA_ave>Aa_ave){if((aa_ave-AA_ave)>=(AA_ave-Aa_ave)){label+=2}else{label+=8}}else if(Aa_ave>aa_ave&&aa_ave>=AA_ave){if((Aa_ave-aa_ave)>(aa_ave-AA_ave)){label+=8}else{label+=4}}else if(Aa_ave>AA_ave&&AA_ave>aa_ave){if((Aa_ave-AA_ave)>(AA_ave-aa_ave)){label+=8}else{label+=2}}else if(AA_ave>aa_ave&&aa_ave>Aa_ave){if((AA_ave-aa_ave)>=(aa_ave-Aa_ave)){label+=4}else{label+=8}}else{if((AA_ave-Aa_ave)*3<(Aa_ave-aa_ave)){label+=2}else if((AA_ave-Aa_ave)*3>=(Aa_ave-aa_ave)&&(AA_ave-Aa_ave)<=(Aa_ave-aa_ave)*3){label+=1}else{label+=4}};if(label%2==1){print "add\t"log($21)"\t"sqrt($22^2)}else if(label%4==2){print "dom\t"log($23)"\t"sqrt($24^2)}else if(label%8==4){print "rec\t"(-1)*log($25)"\t"sqrt($26^2)}else{print "het\t"log(($16*$17-$17)*($5-($4*$5-$5))/(($17-($16*$17-$17))*($4*$5-$5)))"\t"sqrt((($16-$4)/sqrt($18^2/$17+$6^2/$5))^2)}}' ${inputfile}_${split_num}.fea > ${inputfile}_${split_num}.summary
                         awk '{label=0;aa_ave=$7;Aa_ave=$4;AA_ave=$1;if(aa_ave==Aa_ave){point=200}else if(aa_ave==AA_ave){point=200}else if(Aa_ave==AA_ave){point=200}else if(aa_ave>=Aa_ave&&Aa_ave>=AA_ave){if((aa_ave-Aa_ave)/(aa_ave-AA_ave)>0.5){point=((aa_ave-Aa_ave)/(aa_ave-AA_ave))*200-1000}else{point=(-1)*((aa_ave-Aa_ave)/(aa_ave-AA_ave))*200+1000}}else if(aa_ave>=AA_ave&&AA_ave>Aa_ave){point=(AA_ave-Aa_ave)/(aa_ave-AA_ave)*1000+1000}else if(Aa_ave>aa_ave&&aa_ave>=AA_ave){point=(Aa_ave-aa_ave)/(aa_ave-AA_ave)*1000+1000}else if(Aa_ave>AA_ave&&AA_ave>aa_ave){point=(Aa_ave-AA_ave)/(AA_ave-aa_ave)*1000+1000}else if(AA_ave>aa_ave&&aa_ave>Aa_ave){point=(aa_ave-Aa_ave)/(AA_ave-aa_ave)*1000+1000}else{if((AA_ave-Aa_ave)/(Aa_ave-aa_ave)>0.5){point=((AA_ave-Aa_ave)/(AA_ave-aa_ave))*200-1000}else{point=(-1)*(AA_ave-Aa_ave)/(AA_ave-aa_ave)*200+1000}};if((aa_ave-Aa_ave)^2>(Aa_ave-AA_ave)^2){label="dom"}else{label="rec"};if(label=="dom"){print "dom\t"log($24)"\t"sqrt($25^2)"\t"$26"\t"point"\t"log($21)"\t"sqrt($22^2)"\t"$23}else{print "rec\t"(-1)*log($27)"\t"sqrt($28^2)"\t"$29"\t"point"\t"log($21)"\t"sqrt($22^2)"\t"$23}}' ${inputfile}_${split_num}.fea > ${inputfile}_${split_num}.summary
                 elif [ $calculate_mod = "Origin" ];then
                         echo 104
                         awk '{print "add\t"log($21)"\t"sqrt($22^2)"\t"$23}' ${inputfile}_${split_num}.fea > ${inputfile}_${split_num}.summary
-                elif [ $calculate_mod = "Compare" ];then
+                elif [ $calculate_mod = "mean" ];then
                         echo 140
                         awk '{add_t=sqrt($22^2);dom_t=sqrt($25^2);rec_t=sqrt($28^2);if(add_t==0){point=200;print "dom\t"log($24)"\t"sqrt($25^2)"\t"$26"\t"point"\t"log($21)"\t"sqrt($22^2)"\t"$23}else if(dom_t>rec_t){point=dom_t/add_t*1000;print "dom\t"log($24)"\t"sqrt($25^2)"\t"$26"\t"point"\t"log($21)"\t"sqrt($22^2)"\t"$23}else{point=rec_t/add_t*1000;print "rec\t"(-1)*log($27)"\t"sqrt($28^2)"\t"$29"\t"point"\t"log($21)"\t"sqrt($22^2)"\t"$23}}' ${inputfile}_${split_num}.fea > ${inputfile}_${split_num}.summary
                         echo "612"
