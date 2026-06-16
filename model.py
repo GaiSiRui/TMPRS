@@ -247,7 +247,7 @@ def before_summary(args):
     if args.calculate_mod == "mean":
         pheno = pd.read_csv(args.pheno, sep="\s+")
         covar = pd.read_csv(args.covar, sep="\s+")
-        geno_name = pd.read_csv(args.input_file + ".bim", header = None , sep="\s+", , usecols=[1])
+        geno_name = pd.read_csv(args.input_file + ".bim", header = None , sep="\s+", usecols=[1])
         os.system("plink --bfile " + args.input_file + " --recode --out " + args.input_file)
         
         with open('mean.csv', mode='w', newline='') as file:
