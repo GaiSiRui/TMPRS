@@ -177,13 +177,13 @@ def before_summary(args):
             snps = assoc.iloc[1, :]
 
         else:
-            os.system("plink --bfile " + args.input_file + "  --pheno " + args.input_file + ".pheno --keep " + args.input_file + ".list --geno 0.05 --maf 0.05 --out " + args.input_file + " --linear dominant hide-covar --covar "args.covar" keep-pheno-on-missing-cov")
+            os.system("plink --bfile " + args.input_file + "  --pheno " + args.input_file + ".pheno --keep " + args.input_file + ".list --geno 0.05 --maf 0.05 --out " + args.input_file + " --linear dominant hide-covar --covar " + args.covar + " keep-pheno-on-missing-cov")
             assoc_linear = pd.read_csv(args.input_file + ".assoc.linear", sep=r'\s+')
             assoc_dom = assoc_linear[assoc_linear['TEST'] == 'DOM']
-            os.system("plink --bfile " + args.input_file + "  --pheno " + args.input_file + ".pheno --keep " + args.input_file + ".list --geno 0.05 --maf 0.05 --out " + args.input_file + " --linear recessive hide-covar --covar "args.covar" keep-pheno-on-missing-cov")
+            os.system("plink --bfile " + args.input_file + "  --pheno " + args.input_file + ".pheno --keep " + args.input_file + ".list --geno 0.05 --maf 0.05 --out " + args.input_file + " --linear recessive hide-covar --covar " + args.covar + " keep-pheno-on-missing-cov")
             assoc_linear = pd.read_csv(args.input_file + ".assoc.linear", sep=r'\s+')
             assoc_rec = assoc_linear[assoc_linear['TEST'] == 'REC']
-            os.system("plink --bfile " + args.input_file + "  --pheno " + args.input_file + ".pheno --keep " + args.input_file + ".list --geno 0.05 --maf 0.05 --out " + args.input_file + " --linear hide-covar --covar "args.covar" keep-pheno-on-missing-cov")
+            os.system("plink --bfile " + args.input_file + "  --pheno " + args.input_file + ".pheno --keep " + args.input_file + ".list --geno 0.05 --maf 0.05 --out " + args.input_file + " --linear hide-covar --covar " + args.covar + " keep-pheno-on-missing-cov")
             assoc_linear = pd.read_csv(args.input_file + ".assoc.linear", sep=r'\s+')
             assoc_add = assoc_linear[assoc_linear['TEST'] == 'ADD']
             assoc_linear = pd.concat([assoc_dom, assoc_rec, assoc_add])
