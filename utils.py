@@ -200,13 +200,13 @@ def HAM(p_value):
     return out
 
 def mean(bfile, args):
-    adjusted_pheno = pd.read_csv(args.input_file, delim_whitespace=True)
+    adjusted_pheno = pd.read_csv(args.input_file + ".pheno", delim_whitespace=True)
 
     # 2. 准备结果存储
     results = []
 
     # 3. 使用PyPlink遍历SNPs
-    with PyPlink("alzheimer_train") as bed:  # your_data是PLINK文件前缀
+    with PyPlink(args.input_file) as bed:  # your_data是PLINK文件前缀
         sample_pheno = adjusted_pheno.set_index(['FID', 'IID'])['PHENO']
         for (chrom, snp_id, cm_pos, phys_pos, a1, a2), genotypes in bed:
             df = pd.DataFrame({
