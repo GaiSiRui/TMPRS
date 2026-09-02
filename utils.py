@@ -200,7 +200,7 @@ def HAM(p_value):
     return out
 
 def mean(bfile, args):
-    adjusted_pheno = pd.read_csv(args.train, delim_whitespace=True)
+    adjusted_pheno = pd.read_csv(args.input_file, delim_whitespace=True)
 
     # 2. 准备结果存储
     results = []
