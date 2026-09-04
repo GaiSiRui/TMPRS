@@ -208,17 +208,33 @@ def mean(bfile, args):
     # 3. 使用PyPlink遍历SNPs
     with PyPlink(args.input_file) as bed:  # your_data是PLINK文件前缀
         sample_pheno = adjusted_pheno.set_index(['FID', 'IID'])['PHENO']
-        for snp_info, genotypes in bed:
+        bim = bed.get_bim()
+        fam = bed.get_fam()
+        # Iterating over all loci
+        for loci_name, genotypes in bed:
+            pass
+
+        sample_pheno = adjusted_pheno.set_index(['FID', 'IID'])['PHENO']
+        # Getting the genotypes of a single marker (numpy.ndarray)
+        for idx, (snp_id, genotypes) in enumerate(bed):
             print(type(snp_info))          # 查看类型
             print(snp_info)               # 查看内容
             print(len(snp_info))          # 查看长度
+            print(type(genotypes))          # 查看类型
+            print(genotypes)               # 查看内容
+            print(len(genotypes))          # 查看长度
+            chrom = bim.iloc[idx]['chrom']
+            cm_pos = bim.iloc[idx]['cm']
+            phys_pos = bim.iloc[idx]['pos']
+            a1 = bim.iloc[idx]['a1']
+            a2 = bim.iloc[idx]['a2']
             #break
-            chrom = snp_info.chrom
-            snp_id = snp_info.snp_id
-            cm_pos = snp_info.cm          # 或 snp_info.cm_pos，请根据实际字段调整
-            phys_pos = snp_info.pos
-            a1 = snp_info.a1
-            a2 = snp_info.a2
+            snp_info = bim_indexed.loc[snp_id]
+            chrom = snp_info['chrom']
+            cm_pos = snp_info['cm']
+            phys_pos = snp_info['pos']
+            a1 = snp_info['a1']
+            a2 = snp_info['a2']
             #for (chrom, snp_id, cm_pos, phys_pos, a1, a2), genotypes in bed:
             df = pd.DataFrame({
                 'FID': bed.fid,
