@@ -36,7 +36,7 @@ import gc
 def main(args):
     assoc_combine = before_summary(args)
     #assoc_combine = pd.read_csv('example_big.csv', sep="\t")
-    print(assoc_combine)
+    #print(assoc_combine)
     utils.mean(args.input_file, args)
     after_summary(args, assoc_combine)
 
