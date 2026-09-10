@@ -146,12 +146,14 @@ def before_summary(args):
             assoc_add = assoc_add.reset_index(drop=True)
 
             assoc_dom = assoc_logistic[assoc_logistic['TEST'] == 'DOM']
+            assoc_dom = assoc_dom[assoc_dom['P'] != "NA"]
             assoc_dom = assoc_dom[assoc_dom['SNP'].isin(clumped_snps)]
             snps_dom = assoc_dom.iloc[1, :]
             assoc_dom = assoc_dom.reset_index(drop=True)
 
             # 筛选 assoc_add 中 SNP 列在 valid_snps 列表中的行
             assoc_rec = assoc_logistic[assoc_logistic['TEST'] == 'REC']
+            assoc_rec = assoc_rec[assoc_rec['P'] != "NA"]
             assoc_rec = assoc_rec[assoc_rec['SNP'].isin(clumped_snps)]
             snps_rec = assoc_rec.iloc[1, :]
             assoc_rec = assoc_rec.reset_index(drop=True)
