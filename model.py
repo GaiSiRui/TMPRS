@@ -121,7 +121,7 @@ def before_summary(args):
             if args.covar == False:
                 os.system("plink --bfile " + args.input_file + "  --pheno " + args.input_file + ".pheno --keep " + args.input_file + ".list --geno 0.05 --maf 0.05 --out " + args.input_file + " --logistic recessive keep-pheno-on-missing-cov")
             else:
-                os.system("plink --bfile " + args.input_file + "  --pheno " + args.input_file + ".pheno --keep " + args.input_file + ".list --geno 0.05 --maf 0.05 --out " + args.input_file + " --logistic recesive hide-covar --covar " + args.covar + " keep-pheno-on-missing-cov")
+                os.system("plink --bfile " + args.input_file + "  --pheno " + args.input_file + ".pheno --keep " + args.input_file + ".list --geno 0.05 --maf 0.05 --out " + args.input_file + " --logistic recessive hide-covar --covar " + args.covar + " keep-pheno-on-missing-cov")
             assoc_logistic = pd.read_csv(args.input_file + ".assoc.logistic", sep=r'\s+')
             assoc_rec = assoc_logistic[assoc_logistic['TEST'] == 'REC']
             if args.covar == False:
