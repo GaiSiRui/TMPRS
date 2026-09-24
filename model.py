@@ -34,11 +34,13 @@ import csv
 import gc
 
 def main(args):
-    assoc_combine = before_summary(args)
-    #assoc_combine = pd.read_csv('example_big.csv', sep="\t")
-    #print(assoc_combine)
+    #assoc_combine = before_summary(args)
+    assoc_combine = pd.read_csv('alzheimer_train.csv', sep="\t")
+    print(assoc_combine)
     utils.mean(args.input_file, args)
-    after_summary(args, assoc_combine)
+
+    if args.comparemod == True:
+        after_summary(args, assoc_combine)
 
 def before_summary(args):
     file_name = args.test_file + ".summary_and_bim"
@@ -52,7 +54,6 @@ def before_summary(args):
         fam_num = utils.file_line(file_name, [0, 1], ['FID', 'IID'], 9 / 10)
 
     elif args.test_file != "False" and args.validation_file != "False":
-        print(file_name)
         fam_num = utils.file_line(file_name, [0, 1], ['FID', 'IID'])
 
     elif args.test_file != "False" and args.validation_file == "False":
@@ -87,7 +88,6 @@ def before_summary(args):
             file.write('FID' + content)
 
     if args.beta == True:
-        print("492.1")
         if args.calculate_mod == "origin":
             """
             os.system("plink --bfile " + args.input_file + "  --pheno " + args.input_file + ".pheno --keep " + args.input_file + ".list --geno 0.05 --maf 0.05 --out " + args.input_file + " --logistic hide-covar --covar args.covar keep-pheno-on-missing-cov")
@@ -159,19 +159,16 @@ def before_summary(args):
             assoc_rec = assoc_rec.reset_index(drop=True)
 
 
-        print(assoc_add['OR'])
         try:
             or_value = float(assoc_add['OR'])          # 尝试转换为浮点数
             assoc_add['beta'] = np.log(or_value)       # 转换成功则取对数
         except (ValueError, TypeError):                # 转换失败（非数值类型或无法解析的字符串）
             assoc_add['beta'] = assoc_add['OR']        # 保留原始值，不进行 log 操作
-        print(assoc_dom['OR'])
         try:
             or_value = float(assoc_dom['OR'])          # 尝试转换为浮点数
             assoc_dom['beta'] = np.log(or_value)       # 转换成功则取对数
         except (ValueError, TypeError):                # 转换失败（非数值类型或无法解析的字符串）
             assoc_dom['beta'] = assoc_dom['OR']        # 保留原始值，不进行 log 操作
-        print(assoc_rec['OR'])
         try:
             or_value = float(assoc_rec['OR'])          # 尝试转换为浮点数
             assoc_rec['beta'] = np.log(or_value)       # 转换成功则取对数
@@ -458,8 +455,9 @@ def before_summary(args):
     # 删除多余的 B_col2 列（如果需要）
     #assoc_combine_1 = assoc_combine_1.drop(columns=['SNP'])
 
+    file = args.input_file + ".csv"
+    assoc_combine.to_csv(file, sep = "\t", index=False)
     return(assoc_combine)
-
 
 
 def after_summary(args, assoc_combine):

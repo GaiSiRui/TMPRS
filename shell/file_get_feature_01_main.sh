@@ -1,9 +1,32 @@
+#!/bin/bash
+#slurm options
+#SBATCH -p amd-ep2
+#SBATCH -q normal
+#SBATCH -J BMI
+#SBATCH -c 14
+#SBATCH -o BMI.log
+
+mkdir /data/gaisirui
+mkdir /data/gaisirui/prsice_BMI_african
+cp *.py /data/gaisirui/prsice_BMI_african
+cp file_get_feature_01_main.sh /data/gaisirui/prsice_BMI_african
+cp BMI_train.??? /data/gaisirui/prsice_BMI_african
+cp BMI_validation.??? /data/gaisirui/prsice_BMI_african
+cp BMI_african.??? /data/gaisirui/prsice_BMI_african
+cp side_information_excluding_BMI.tab /data/gaisirui/prsice_BMI_african
+cp ethnic_w.txt /data/gaisirui/prsice_BMI_african
+cp validfloat.sh /data/gaisirui/prsice_BMI_african
+cp same_fam.sh /data/gaisirui/prsice_BMI_african
+cp relu.sh /data/gaisirui/prsice_BMI_african
+
+cd /data/gaisirui/prsice_BMI_african
+
 >$time_point.log
 >${threshold}.log
 num=0
 logistic="False"
 clumped="False"
-calculate_mod="beta"
+calculate_mod="False"
 filed="False"
 testmod="False"
 time_point=`date +%Y%m%d%H%M%S`
@@ -26,12 +49,13 @@ merge="False"
 summary="False"
 validationmod="False"
 with_origin="False"
+comparemod="False"
 
 source ./validfloat.sh
 source ./same_fam.sh
 source ./relu.sh
 
-ARGS=`getopt -o hi:v:B:E:s:bkc:t:H:gGVI:L:T:K:mSw --long help,input-file:,validation-file:,begin-site:,end-site:,site-step:,beta,keep-t-value,calculate-mod:,test-file:,threshold-t:,group-input,group-test,group-validation,interval:,lower:,thread:,ethnic_w.txt,merge,summary,with_origin -- "$@"`
+ARGS=`getopt -o hi:v:B:E:s:bkc:t:H:gGVI:L:T:K:mSwC --long help,input-file:,validation-file:,begin-site:,end-site:,site-step:,beta,keep-t-value,calculate-mod:,test-file:,threshold-t:,group-input,group-test,group-validation,interval:,lower:,thread:,ethnic_w.txt,merge,summary,with_origin,comparemod -- "$@"`
 if [ $? != 0 ];then
         echo "Termination..." >&2
         exit 1
@@ -42,7 +66,7 @@ while true
 do
         case "$1" in
                 -h|--help)
-                        echo -e "-i|--input-file : The name of input_file, without suffix\n\n-b|--beta : Base association file\n\n-c|--calculate-mod : The calculate-mods. The chosenable label include: \n\n\t\t\t\tOrigin\n\n\t\t\t\tMean-value\n\n\t\t\t\tT-compare\n\n\t\t\t\tBeta-compare\n\n-g|--group-input : Input list mode\n\n\t\t\t\tHere, please make sure all the input file have the same .fam file.\n\n-G|--group-test : Test list mode\n\n\t\t\t\tHere, please make sure all the test file have the same .fam file.\n\n-V|--group-validation : Validation list mode\n\n\t\t\t\tHere, please make sure all the validation file have the same .fam file.\n\n-v|--validation-file : The name of validation file, if did not use this label, the system will use the last ten percent of the input dataset as the validation set\n\n-t|--test-file : The name of test file, if did not use this label, the system will use the last ten percent of the input dataset as the test set. If both of this label and the \"-v\" label have not used, the system will use the last ten percent of the input dataset as the test set, and next last ten percent of the input dataset as the validation set\n\n-B|--begin-site : The lower threshold of the split position of the system. The default value is 0. The value is no less than 0. Notice that the number can set a little higher when useing the t-split mode.\n\n-E|--end-site : The higher threshold of the split position of the system. The default value is 200. Notice that the number can set a little lower when useing the t-split mode.\n\n-s|--site-step : The threshold's step, too small value may cause the code's running step slow down. The value should no lower than (end_site - begin_site). The dafault value is 10\n\n-I|--interval : The step size of the threshold. The default is 5e-05\n\n-L|--lower : The starting p-value threshold. The default is 5e-08\n\n-h|--help : Print this help\n\n-T|--Thread : The number of thread, recommended no larger than the number of (end_site - begin_site) / site_step\n\n-H|--threshold_t : The highest p value of the snps included into the system. The default is 0.05\n\n-K|--keep_list: The list of people keep in all the process. The file need two column, the first one is family ID and the second is individual ID.\n\n-m|--merge : Merge the result of additive and non-additive calculate model\n\n-w|--with_origin : Calculate origin model in the same time calculating the other model."
+                        echo -e "-i|--input-file : The name of input_file, without suffix\n\n-b|--beta : Base association file\n\n-c|--calculate-mod : The calculate-mods. The chosenable label include: \n\n\t\t\t\tOrigin\n\n\t\t\t\tMean-value\n\n\t\t\t\tT-compare\n\n\t\t\t\tBeta-compare\n\n-g|--group-input : Input list mode\n\n\t\t\t\tHere, please make sure all the input file have the same .fam file.\n\n-G|--group-test : Test list mode\n\n\t\t\t\tHere, please make sure all the test file have the same .fam file.\n\n-V|--group-validation : Validation list mode\n\n\t\t\t\tHere, please make sure all the validation file have the same .fam file.\n\n-v|--validation-file : The name of validation file, if did not use this label, the system will use the last ten percent of the input dataset as the validation set\n\n-t|--test-file : The name of test file, if did not use this label, the system will use the last ten percent of the input dataset as the test set. If both of this label and the \"-v\" label have not used, the system will use the last ten percent of the input dataset as the test set, and next last ten percent of the input dataset as the validation set\n\n-B|--begin-site : The lower threshold of the split position of the system. The default value is 0. The value is no less than 0. Notice that the number can set a little higher when useing the t-split mode.\n\n-E|--end-site : The higher threshold of the split position of the system. The default value is 200. Notice that the number can set a little lower when useing the t-split mode.\n\n-s|--site-step : The threshold's step, too small value may cause the code's running step slow down. The value should no lower than (end_site - begin_site). The dafault value is 10\n\n-I|--interval : The step size of the threshold. The default is 5e-05\n\n-L|--lower : The starting p-value threshold. The default is 5e-08\n\n-h|--help : Print this help\n\n-T|--Thread : The number of thread, recommended no larger than the number of (end_site - begin_site) / site_step\n\n-H|--threshold_t : The highest p value of the snps included into the system. The default is 0.05\n\n-K|--keep_list: The list of people keep in all the process. The file need two column, the first one is family ID and the second is individual ID.\n\n-m|--merge : Merge the result of additive and non-additive calculate model\n\n-w|--with_origin : Calculate origin model in the same time calculating the other model\n\n-C|--comparemod : Giveing away the compare result of PRS and truly phenotype of test set."
                         exit 0
                         ;;
 
@@ -139,17 +163,6 @@ do
                         echo "test-file\t"$2"\n"
                         testmod="test"
                         testfile=$2
-                        shift 2
-                        ;;
-
-                -t|--side-file)
-                        echo "V\t"$2"\n"
-                        if [[ $2 =~ "\." ]]; then
-                                echo "The side-file cannot include the character \".\""
-                                exit 1
-                        fi
-                        echo "side-file\t"$2"\n"
-                        sidefile=$2
                         shift 2
                         ;;
 
@@ -269,6 +282,12 @@ do
                         keep_file=$2
                         shift 2
                         ;;
+                        
+                -O|--Comparemod)
+                        echo "Compare mod\n"
+                        comparemod="True"
+                        shift
+                        ;;
 
                 --)
                         shift
@@ -351,7 +370,7 @@ if [[ $summary == "False" ]];then
                         inputfile_site=$(echo $input | awk 'NR=="'$inputfile_order'"{print $0}' ${inputfile})
                         if [ $logistic = "True" ] ;then
                                 if [ $calculate_mod = "Origin" ];then
-                                        plink --bfile ${inputfile_site}  --pheno ${inputfile}.pheno --keep ${inputfile}.list --geno 0.05 --maf 0.05 --out ${inputfile_site} --logistic hide-covar --covar ${sidefile} keep-pheno-on-missing-cov
+                                        plink --bfile ${inputfile_site}  --pheno ${inputfile}.pheno --keep ${inputfile}.list --geno 0.05 --maf 0.05 --out ${inputfile_site} --logistic hide-covar --covar ./side_information_excluding_BMI.tab keep-pheno-on-missing-cov
                                         awk '$0~/ADD/||NR==1{print $0}' ${inputfile_site}.assoc.logistic > ${inputfile_site}.assoc.add
                                         if [ $clumped = "False" ];then
                                                 plink --bfile ${inputfile_site} --keep ${inputfile}.list --clump-p1 1 --clump-r2 0.1 --clump-kb 250 --clump ${inputfile_site}.assoc.logistic --clump-snp-field SNP --clump-field P
@@ -360,11 +379,11 @@ if [[ $summary == "False" ]];then
                                         echo "362"
                                         awk '{print $1}' ${inputfile_site}.assoc > ${inputfile_site}.snps
                                 else
-                                        plink --bfile ${inputfile_site}  --pheno ${inputfile}.pheno --keep ${inputfile}.list --geno 0.05 --maf 0.05 --out ${inputfile_site} --logistic dominant hide-covar --covar ${sidefile} keep-pheno-on-missing-cov
+                                        plink --bfile ${inputfile_site}  --pheno ${inputfile}.pheno --keep ${inputfile}.list --geno 0.05 --maf 0.05 --out ${inputfile_site} --logistic dominant hide-covar --covar ./side_information_excluding_BMI.tab keep-pheno-on-missing-cov
                                         awk '$0~/DOM/||NR==1{print $0}' ${inputfile_site}.assoc.logistic > ${inputfile_site}.assoc.dom
-                                        plink --bfile ${inputfile_site}  --pheno ${inputfile}.pheno --keep ${inputfile}.list --geno 0.05 --maf 0.05 --out ${inputfile_site} --logistic recessive hide-covar --covar ${sidefile} keep-pheno-on-missing-cov
+                                        plink --bfile ${inputfile_site}  --pheno ${inputfile}.pheno --keep ${inputfile}.list --geno 0.05 --maf 0.05 --out ${inputfile_site} --logistic recessive hide-covar --covar ./side_information_excluding_BMI.tab keep-pheno-on-missing-cov
                                         awk '$0~/REC/||NR==1{print $0}' ${inputfile_site}.assoc.logistic > ${inputfile_site}.assoc.rec
-                                        plink --bfile ${inputfile_site}  --pheno ${inputfile}.pheno --keep ${inputfile}.list --geno 0.05 --maf 0.05 --out ${inputfile_site} --logistic hide-covar --covar ${sidefile} keep-pheno-on-missing-cov
+                                        plink --bfile ${inputfile_site}  --pheno ${inputfile}.pheno --keep ${inputfile}.list --geno 0.05 --maf 0.05 --out ${inputfile_site} --logistic hide-covar --covar ./side_information_excluding_BMI.tab keep-pheno-on-missing-cov
                                         awk '$0~/ADD/||NR==1{print $0}' ${inputfile_site}.assoc.logistic > ${inputfile_site}.assoc.add
                                         cat ${inputfile_site}.assoc.add ${inputfile_site}.assoc.dom ${inputfile_site}.assoc.rec > ${inputfile_site}.assoc.logistic
                                         if [ $clumped = "False" ];then
@@ -378,7 +397,7 @@ if [[ $summary == "False" ]];then
                                 fi
                         else
                                 if [ $calculate_mod = "Origin" ];then
-                                        plink --bfile ${inputfile_site}  --pheno ${inputfile}.pheno --keep ${inputfile}.list --geno 0.05 --maf 0.05 --out ${inputfile_site} --linear hide-covar --covar ${sidefile} keep-pheno-on-missing-cov
+                                        plink --bfile ${inputfile_site}  --pheno ${inputfile}.pheno --keep ${inputfile}.list --geno 0.05 --maf 0.05 --out ${inputfile_site} --linear hide-covar --covar ./side_information_excluding_BMI.tab keep-pheno-on-missing-cov
                                         echo "384"
                                         awk '$0~/ADD/||NR==1{print $0}' ${inputfile_site}.assoc.linear > ${inputfile_site}.assoc.add
                                         if [ $clumped = "False" ];then
@@ -387,12 +406,12 @@ if [[ $summary == "False" ]];then
                                         awk 'NR==FNR{a[$3]=$5};NR>FNR{if(($2 in a)&&(a[$2]<0.5))print $2"\t"$7"\t"$8"\t"$9}' plink.clumped ${inputfile_site}.assoc.add > ${inputfile_site}.assoc
                                         awk '{print $1}' ${inputfile_site}.assoc > ${inputfile_site}.snps
                                 else
-                                        plink --bfile ${inputfile_site}  --pheno ${inputfile}.pheno --keep ${inputfile}.list --geno 0.05 --maf 0.05 --out ${inputfile_site} --linear dominant hide-covar --covar ${sidefile} keep-pheno-on-missing-cov
+                                        plink --bfile ${inputfile_site}  --pheno ${inputfile}.pheno --keep ${inputfile}.list --geno 0.05 --maf 0.05 --out ${inputfile_site} --linear dominant hide-covar --covar ./side_information_excluding_BMI.tab keep-pheno-on-missing-cov
                                         awk '$0~/DOM/||NR==1{print $0}' ${inputfile_site}.assoc.linear > ${inputfile_site}.assoc.dom
                                         echo "395"
-                                        plink --bfile ${inputfile_site}  --pheno ${inputfile}.pheno --keep ${inputfile}.list --geno 0.05 --maf 0.05 --out ${inputfile_site} --linear recessive hide-covar --covar ${sidefile} keep-pheno-on-missing-cov
+                                        plink --bfile ${inputfile_site}  --pheno ${inputfile}.pheno --keep ${inputfile}.list --geno 0.05 --maf 0.05 --out ${inputfile_site} --linear recessive hide-covar --covar ./side_information_excluding_BMI.tab keep-pheno-on-missing-cov
                                         awk '$0~/REC/||NR==1{print $0}' ${inputfile_site}.assoc.linear > ${inputfile_site}.assoc.rec
-                                        plink --bfile ${inputfile_site}  --pheno ${inputfile}.pheno --keep ${inputfile}.list --geno 0.05 --maf 0.05 --out ${inputfile_site} --linear hide-covar --covar ${sidefile} keep-pheno-on-missing-cov
+                                        plink --bfile ${inputfile_site}  --pheno ${inputfile}.pheno --keep ${inputfile}.list --geno 0.05 --maf 0.05 --out ${inputfile_site} --linear hide-covar --covar ./side_information_excluding_BMI.tab keep-pheno-on-missing-cov
                                         awk '$0~/ADD/||NR==1{print $0}' ${inputfile_site}.assoc.linear > ${inputfile_site}.assoc.add
                                         cat ${inputfile_site}.assoc.add ${inputfile_site}.assoc.dom ${inputfile_site}.assoc.rec > ${inputfile_site}.assoc.linear
                                         if [ $clumped = "False" ];then
@@ -472,7 +491,7 @@ if [[ $summary == "False" ]];then
                 awk '{print $1"\t"$1"\t"$5}' ${inputfile}.fam > ${inputfile}.sex
                 if [ $logistic = "True" ] ;then
                         if [ $calculate_mod = "Origin" ];then
-                                plink --bfile ${inputfile}  --pheno ${inputfile}.pheno --keep ${inputfile}.list --geno 0.05 --maf 0.05 --out ${inputfile} --logistic hide-covar --covar ${sidefile} keep-pheno-on-missing-cov
+                                plink --bfile ${inputfile}  --pheno ${inputfile}.pheno --keep ${inputfile}.list --geno 0.05 --maf 0.05 --out ${inputfile} --logistic hide-covar --covar ./side_information_excluding_BMI.tab keep-pheno-on-missing-cov
                                 awk '$0~/ADD/||NR==1{print $0}' ${inputfile}.assoc.logistic > ${inputfile}.assoc.add
                                 mv ${inputfile}.assoc.add ${inputfile}.assoc.logistic
                                 if [ $clumped = "False" ];then
@@ -482,11 +501,11 @@ if [[ $summary == "False" ]];then
                                 awk 'NR==FNR{a[$3]=$5};NR>FNR{if(($2 in a)&&(a[$2]<0.5))print $2"\t"$7"\t"$8"\t"$9}' plink.clumped ${inputfile}.assoc.logistic > ${inputfile}.assoc
                                 awk '{print $1}' ${inputfile}.assoc > ${inputfile}.snps
                         else
-                                plink --bfile ${inputfile}  --pheno ${inputfile}.pheno --keep ${inputfile}.list --geno 0.05 --maf 0.05 --out ${inputfile} --logistic dominant hide-covar --covar ${sidefile} keep-pheno-on-missing-cov
+                                plink --bfile ${inputfile}  --pheno ${inputfile}.pheno --keep ${inputfile}.list --geno 0.05 --maf 0.05 --out ${inputfile} --logistic dominant hide-covar --covar ./side_information_excluding_BMI.tab keep-pheno-on-missing-cov
                                 awk '$0~/DOM/||NR==1{print $0}' ${inputfile}.assoc.logistic > ${inputfile}.assoc.dom
-                                plink --bfile ${inputfile}  --pheno ${inputfile}.pheno --keep ${inputfile}.list --geno 0.05 --maf 0.05 --out ${inputfile} --logistic recessive hide-covar --covar ${sidefile} keep-pheno-on-missing-cov
+                                plink --bfile ${inputfile}  --pheno ${inputfile}.pheno --keep ${inputfile}.list --geno 0.05 --maf 0.05 --out ${inputfile} --logistic recessive hide-covar --covar ./side_information_excluding_BMI.tab keep-pheno-on-missing-cov
                                 awk '$0~/REC/||NR==1{print $0}' ${inputfile}.assoc.logistic > ${inputfile}.assoc.rec
-                                plink --bfile ${inputfile}  --pheno ${inputfile}.pheno --keep ${inputfile}.list --geno 0.05 --maf 0.05 --out ${inputfile} --logistic hide-covar --covar ${sidefile} keep-pheno-on-missing-cov
+                                plink --bfile ${inputfile}  --pheno ${inputfile}.pheno --keep ${inputfile}.list --geno 0.05 --maf 0.05 --out ${inputfile} --logistic hide-covar --covar ./side_information_excluding_BMI.tab keep-pheno-on-missing-cov
                                 echo "494"
                                 awk '$0~/ADD/||NR==1{print $0}' ${inputfile}.assoc.logistic > ${inputfile}.assoc.add
                                 cat ${inputfile}.assoc.add ${inputfile}.assoc.dom ${inputfile}.assoc.rec > ${inputfile}.assoc.logistic
@@ -501,7 +520,7 @@ if [[ $summary == "False" ]];then
                         echo "505"
                 else
                         if [ $calculate_mod = "Origin" ];then
-                                plink --bfile ${inputfile}  --pheno ${inputfile}.pheno --keep ${inputfile}.list --geno 0.05 --maf 0.05 --out ${inputfile} --linear hide-covar --covar ${sidefile} keep-pheno-on-missing-cov
+                                plink --bfile ${inputfile}  --pheno ${inputfile}.pheno --keep ${inputfile}.list --geno 0.05 --maf 0.05 --out ${inputfile} --linear hide-covar --covar ./side_information_excluding_BMI.tab keep-pheno-on-missing-cov
                                 awk '$0~/ADD/||NR==1{print $0}' ${inputfile}.assoc.linear > ${inputfile}.assoc.add
                                 if [ $clumped = "False" ];then
                                         plink --bfile ${inputfile} --keep ${inputfile}.list --clump-p1 1 --clump-r2 0.1 --clump-kb 250 --clump ${inputfile}.assoc.linear --clump-snp-field SNP --clump-field P
@@ -510,11 +529,11 @@ if [[ $summary == "False" ]];then
                                 awk '{print $1}' ${inputfile}.assoc > ${inputfile}.snps
                                 echo "516"
                         else
-                                plink --bfile ${inputfile}  --pheno ${inputfile}.pheno --keep ${inputfile}.list --geno 0.05 --maf 0.05 --out ${inputfile} --linear dominant hide-covar --covar ${sidefile} keep-pheno-on-missing-cov
+                                plink --bfile ${inputfile}  --pheno ${inputfile}.pheno --keep ${inputfile}.list --geno 0.05 --maf 0.05 --out ${inputfile} --linear dominant hide-covar --covar ./side_information_excluding_BMI.tab keep-pheno-on-missing-cov
                                 awk '$0~/DOM/||NR==1{print $0}' ${inputfile}.assoc.linear > ${inputfile}.assoc.dom
-                                plink --bfile ${inputfile}  --pheno ${inputfile}.pheno --keep ${inputfile}.list --geno 0.05 --maf 0.05 --out ${inputfile} --linear recessive hide-covar --covar ${sidefile} keep-pheno-on-missing-cov
+                                plink --bfile ${inputfile}  --pheno ${inputfile}.pheno --keep ${inputfile}.list --geno 0.05 --maf 0.05 --out ${inputfile} --linear recessive hide-covar --covar ./side_information_excluding_BMI.tab keep-pheno-on-missing-cov
                                 awk '$0~/REC/||NR==1{print $0}' ${inputfile}.assoc.linear > ${inputfile}.assoc.rec
-                                plink --bfile ${inputfile}  --pheno ${inputfile}.pheno --keep ${inputfile}.list --geno 0.05 --maf 0.05 --out ${inputfile} --linear hide-covar --covar ${sidefile} keep-pheno-on-missing-cov
+                                plink --bfile ${inputfile}  --pheno ${inputfile}.pheno --keep ${inputfile}.list --geno 0.05 --maf 0.05 --out ${inputfile} --linear hide-covar --covar ./side_information_excluding_BMI.tab keep-pheno-on-missing-cov
                                 awk '$0~/ADD/||NR==1{print $0}' ${inputfile}.assoc.linear > ${inputfile}.assoc.add
                                 cat ${inputfile}.assoc.add ${inputfile}.assoc.dom ${inputfile}.assoc.rec > ${inputfile}.assoc.linear
                                 if [ $clumped = "False" ];then
@@ -591,14 +610,14 @@ if [[ $summary == "False" ]];then
                 #rm ${inputfile}_${split_num}.ped ${inputfile}_${split_num}.log ${inputfile}_${split_num}.map
                 paste ${inputfile}_${split_num}.fea_few ${inputfile}.assoc_${split_num} > ${inputfile}_${split_num}.fea
                 echo "601"
-                if [ $calculate_mod = "t" ];then
+                if [ $calculate_mod = "False" ];then
                         echo 101
                         #awk '{label=0;aa_ave=$7;Aa_ave=$4;AA_ave=$1;if(aa_ave>=Aa_ave&&Aa_ave>=AA_ave){if((aa_ave-Aa_ave)*3<(Aa_ave-AA_ave)){label+=4}else if((aa_ave-Aa_ave)*3>=(Aa_ave-AA_ave)&&(aa_ave-Aa_ave)<=(Aa_ave-AA_ave)*3){label+=1}else{label+=2}}else if(aa_ave>=AA_ave&&AA_ave>Aa_ave){if((aa_ave-AA_ave)>=(AA_ave-Aa_ave)){label+=2}else{label+=8}}else if(Aa_ave>aa_ave&&aa_ave>=AA_ave){if((Aa_ave-aa_ave)>(aa_ave-AA_ave)){label+=8}else{label+=4}}else if(Aa_ave>AA_ave&&AA_ave>aa_ave){if((Aa_ave-AA_ave)>(AA_ave-aa_ave)){label+=8}else{label+=2}}else if(AA_ave>aa_ave&&aa_ave>Aa_ave){if((AA_ave-aa_ave)>=(aa_ave-Aa_ave)){label+=4}else{label+=8}}else{if((AA_ave-Aa_ave)*3<(Aa_ave-aa_ave)){label+=2}else if((AA_ave-Aa_ave)*3>=(Aa_ave-aa_ave)&&(AA_ave-Aa_ave)<=(Aa_ave-aa_ave)*3){label+=1}else{label+=4}};if(label%2==1){print "add\t"log($21)"\t"sqrt($22^2)}else if(label%4==2){print "dom\t"log($23)"\t"sqrt($24^2)}else if(label%8==4){print "rec\t"(-1)*log($25)"\t"sqrt($26^2)}else{print "het\t"log(($16*$17-$17)*($5-($4*$5-$5))/(($17-($16*$17-$17))*($4*$5-$5)))"\t"sqrt((($16-$4)/sqrt($18^2/$17+$6^2/$5))^2)}}' ${inputfile}_${split_num}.fea > ${inputfile}_${split_num}.summary
                         awk '{label=0;aa_ave=$7;Aa_ave=$4;AA_ave=$1;if(aa_ave==Aa_ave){point=200}else if(aa_ave==AA_ave){point=200}else if(Aa_ave==AA_ave){point=200}else if(aa_ave>=Aa_ave&&Aa_ave>=AA_ave){if((aa_ave-Aa_ave)/(aa_ave-AA_ave)>0.5){point=((aa_ave-Aa_ave)/(aa_ave-AA_ave))*200-1000}else{point=(-1)*((aa_ave-Aa_ave)/(aa_ave-AA_ave))*200+1000}}else if(aa_ave>=AA_ave&&AA_ave>Aa_ave){point=(AA_ave-Aa_ave)/(aa_ave-AA_ave)*1000+1000}else if(Aa_ave>aa_ave&&aa_ave>=AA_ave){point=(Aa_ave-aa_ave)/(aa_ave-AA_ave)*1000+1000}else if(Aa_ave>AA_ave&&AA_ave>aa_ave){point=(Aa_ave-AA_ave)/(AA_ave-aa_ave)*1000+1000}else if(AA_ave>aa_ave&&aa_ave>Aa_ave){point=(aa_ave-Aa_ave)/(AA_ave-aa_ave)*1000+1000}else{if((AA_ave-Aa_ave)/(Aa_ave-aa_ave)>0.5){point=((AA_ave-Aa_ave)/(AA_ave-aa_ave))*200-1000}else{point=(-1)*(AA_ave-Aa_ave)/(AA_ave-aa_ave)*200+1000}};if((aa_ave-Aa_ave)^2>(Aa_ave-AA_ave)^2){label="dom"}else{label="rec"};if(label=="dom"){print "dom\t"log($24)"\t"sqrt($25^2)"\t"$26"\t"point"\t"log($21)"\t"sqrt($22^2)"\t"$23}else{print "rec\t"(-1)*log($27)"\t"sqrt($28^2)"\t"$29"\t"point"\t"log($21)"\t"sqrt($22^2)"\t"$23}}' ${inputfile}_${split_num}.fea > ${inputfile}_${split_num}.summary
                 elif [ $calculate_mod = "Origin" ];then
                         echo 104
                         awk '{print "add\t"log($21)"\t"sqrt($22^2)"\t"$23}' ${inputfile}_${split_num}.fea > ${inputfile}_${split_num}.summary
-                elif [ $calculate_mod = "mean" ];then
+                elif [ $calculate_mod = "Compare" ];then
                         echo 140
                         awk '{add_t=sqrt($22^2);dom_t=sqrt($25^2);rec_t=sqrt($28^2);if(add_t==0){point=200;print "dom\t"log($24)"\t"sqrt($25^2)"\t"$26"\t"point"\t"log($21)"\t"sqrt($22^2)"\t"$23}else if(dom_t>rec_t){point=dom_t/add_t*1000;print "dom\t"log($24)"\t"sqrt($25^2)"\t"$26"\t"point"\t"log($21)"\t"sqrt($22^2)"\t"$23}else{point=rec_t/add_t*1000;print "rec\t"(-1)*log($27)"\t"sqrt($28^2)"\t"$29"\t"point"\t"log($21)"\t"sqrt($22^2)"\t"$23}}' ${inputfile}_${split_num}.fea > ${inputfile}_${split_num}.summary
                         echo "612"
@@ -668,6 +687,8 @@ else
         sort -g -k 8 ${inputfile}.summary_and_bim -o time
 fi
 mv time ${inputfile}.summary_and_bim
+cp ${inputfile}.summary_and_bim /storage/zhenghoufengLab/gaisirui/prsice_BMI_african/
+cp /storage/zhenghoufengLab/gaisirui/prsice_BMI_african/${inputfile}.summary_and_bim .
 if [ $calculate_mod = "Origin" ];then
         awk '{print $6}' ${inputfile}.summary_and_bim > ${inputfile}.snps
 else
@@ -752,6 +773,7 @@ if [ $prsice = "False" ];then
                 echo "sort OK"
                 echo "sort OK" >> $time_point.log
                 tail ${inputfile}_${split_num}
+                cp ${inputfile}_${split_num} /storage/zhenghoufengLab/gaisirui/prsice_BMI_african/
                 split_num=`echo $spli_num | awk '{printf("%0"'${#input_length}'"d",$0)}'`;
                 if [[ $testmod == "test" ]] && [[ $validationmod == "validation" ]];then
                         plink --bfile ${testfile} --keep ${testfile}.list --extract ${inputfile}_${split_num} --recode --out ${testfile}_${split_num}
@@ -849,105 +871,147 @@ if [ $prsice = "False" ];then
                                 echo "${snp_site[@]}" | grep -wq $((inputnum+1000*10#$split_num)) && echo "495" || continue
                                 echo "763"
 
-                                if [ $calculate_mod != "Origin" ];then
-                                        for threshold in $(seq $begin_site $step $end_site)
-                                        do
-                                        {
-                                                #awk 'NR==FNR{a[NR]=$1}NR>FNR{print a[FNR]+$1}' ${num}_${split_num}_${threshold}.best all_${threshold}.best > time_${threshold}.best
-                                                #awk 'NR==FNR{a[NR]=$1}NR>FNR{print a[FNR]+$1}' ${num}_${split_num}_${threshold}_validation.best all_${threshold}_validation.best > time_${threshold}_validation.best
-                                                paste time_${threshold}.best ${testfile}_${split_num}.fam > time_${threshold}.spearman
-                                                echo "time_'${threshold}'.best"
-                                                head -2 time_${threshold}.best
-                                                echo ${testfile}"_"${split_num}".fam"
-                                                head -2 ${testfile}_${split_num}.fam
-                                                paste time_${threshold}_validation.best ${validationfile}_${split_num}.fam > time_${threshold}_validation.spearman
-                                                echo "time_'${threshold}'_validation.best"
-                                                head -2 time_${threshold}_validation.best
-                                                echo ${validationfile}"_"${split_num}".fam"
-                                                head -2 ${validationfile}_${split_num}.fam
-                                                sed -i '/-9/d' time_${threshold}.spearman
-                                                echo "774"
-                                                sed -i '/-9/d' time_${threshold}_validation.spearman
+                                if [ $comparemod == "True" ];then
+                                        if [ $calculate_mod != "Origin" ];then
+                                                for threshold in $(seq $begin_site $step $end_site)
+                                                do
+                                                {
+                                                        #awk 'NR==FNR{a[NR]=$1}NR>FNR{print a[FNR]+$1}' ${num}_${split_num}_${threshold}.best all_${threshold}.best > time_${threshold}.best
+                                                        #awk 'NR==FNR{a[NR]=$1}NR>FNR{print a[FNR]+$1}' ${num}_${split_num}_${threshold}_validation.best all_${threshold}_validation.best > time_${threshold}_validation.best
+                                                        paste time_${threshold}.best ${testfile}_${split_num}.fam > time_${threshold}.spearman
+                                                        echo "time_'${threshold}'.best"
+                                                        head -2 time_${threshold}.best
+                                                        echo ${testfile}"_"${split_num}".fam"
+                                                        head -2 ${testfile}_${split_num}.fam
+                                                        paste time_${threshold}_validation.best ${validationfile}_${split_num}.fam > time_${threshold}_validation.spearman
+                                                        echo "time_'${threshold}'_validation.best"
+                                                        head -2 time_${threshold}_validation.best
+                                                        echo ${validationfile}"_"${split_num}".fam"
+                                                        head -2 ${validationfile}_${split_num}.fam
+                                                        sed -i '/-9/d' time_${threshold}.spearman
+                                                        echo "774"
+                                                        sed -i '/-9/d' time_${threshold}_validation.spearman
+                                                        if [ $logistic = "False" ];then
+                                                                old_relation_validation_spearman=-1000
+                                                                old_relation_validation_pearson=-1000
+                                                                old_relation_validation_r2=-1000
+                                                                relation_spearman=`/home/zhenghoufengLab/gaisirui/miniconda3/bin/python -c 'import spearman;print(spearman.ReadData("time_'${threshold}'.spearman"))'`
+                                                                relation_validation_spearman=`/home/zhenghoufengLab/gaisirui/miniconda3/bin/python -c 'import spearman;print(spearman.ReadData("time_'${threshold}'_validation.spearman"))'`
+                                                                relation_r2=`/home/zhenghoufengLab/gaisirui/miniconda3/bin/python -c 'import r2;print(r2.ReadData("time_'${threshold}'.spearman"))'`
+                                                                relation_validation_r2=`/home/zhenghoufengLab/gaisirui/miniconda3/bin/python -c 'import r2;print(r2.ReadData("time_'${threshold}'_validation.spearman"))'`
+                                                                relation_pearson=`/home/zhenghoufengLab/gaisirui/miniconda3/bin/python -c 'import pearson;print(pearson.ReadData("time_'${threshold}'.spearman"))'`
+                                                                relation_validation_pearson=`/home/zhenghoufengLab/gaisirui/miniconda3/bin/python -c 'import pearson;print(pearson.ReadData("time_'${threshold}'_validation.spearman"))'`
+                                                                echo "the "$((inputnum+1000*10#$split_num))" snp by the "$threshold" threshold got results as spearman values: test set as "$relation_spearman " and validation set as "$relation_validation_spearman"; r2 values: test set as "$relation_r2 " and validation set as "$relation_validation_r2"; pearson values: test set as "$relation_pearson " and validation set as "$relation_validation_pearson
+                                                                echo "the "$((inputnum+1000*10#$split_num))" snp by the "$threshold" threshold got results as spearman values: test set as "$relation_spearman " and validation set as "$relation_validation_spearman"; r2 values: test set as "$relation_r2 " and validation set as "$relation_validation_r2"; pearson values: test set as "$relation_pearson " and validation set as "$relation_validation_pearson >> $time_point.log
+                                                                echo "785"
+                                                                echo "the "$((inputnum+1000*10#$split_num))" snp by the "$threshold" threshold got results as spearman values: test set as "$relation_spearman " and validation set as "$relation_validation_spearman"; r2 values: test set as "$relation_r2 " and validation set as "$relation_validation_r2"; pearson values: test set as "$relation_pearson " and validation set as "$relation_validation_pearson >> ${threshold}.log
+                                                                sort -g -k 2 ${threshold}.log -o ${threshold}.log
+                                                                if [ $(echo "$relation_validation_spearman > $old_relation_validation_spearman" | bc) = 1  ];then
+                                                                    cp time_${threshold}.spearman /storage/zhenghoufengLab/gaisirui/prsice_BMI_african/spearman_test.result
+                                                                    cp time_${threshold}_validation.spearman /storage/zhenghoufengLab/gaisirui/prsice_BMI_african/spearman_validation.result
+                                                                fi
+                                                                if [ $(echo "$relation_validation_r2 > $old_relation_validation_r2" | bc) = 1  ];then
+                                                                    cp time_${threshold}.spearman /storage/zhenghoufengLab/gaisirui/prsice_BMI_african/r2_test.result
+                                                                    cp time_${threshold}_validation.spearman /storage/zhenghoufengLab/gaisirui/prsice_BMI_african/r2_validation.result
+                                                                fi
+                                                                if [ $(echo "$relation_validation_pearson > $old_relation_validation_pearson" | bc) = 1  ];then
+                                                                    cp time_${threshold}.spearman /storage/zhenghoufengLab/gaisirui/prsice_BMI_african/pearson_test.result
+                                                                    cp time_${threshold}_validation.spearman /storage/zhenghoufengLab/gaisirui/prsice_BMI_african/pearson_validation.result
+                                                                fi
+                                                        else
+                                                                old_relation_validation_bce=-1000
+                                                                old_relation_validation_r2=-1000
+                                                                relation_bce=`/home/zhenghoufengLab/gaisirui/miniconda3/bin/python -c 'import bce;print(bce.ReadData("time_'${threshold}'.spearman"))'`
+                                                                echo "time_'${threshold}'.spearman"
+                                                                head -2 time_${threshold}.spearman
+                                                                relation_validation_bce=`/home/zhenghoufengLab/gaisirui/miniconda3/bin/python -c 'import bce;print(bce.ReadData("time_'${threshold}'_validation.spearman"))'`
+                                                                echo "time_'${threshold}'_validation.spearman"
+                                                                head -2 time_${threshold}_validation.spearman
+                                                                relation_r2=`/home/zhenghoufengLab/gaisirui/miniconda3/bin/python -c 'import r2;print(r2.ReadData("time_'${threshold}'.spearman"))'`
+                                                                echo "time_'${threshold}'.spearman"
+                                                                head -2 time_${threshold}.spearman
+                                                                relation_validation_r2=`/home/zhenghoufengLab/gaisirui/miniconda3/bin/python -c 'import r2;print(r2.ReadData("time_'${threshold}'_validation.spearman"))'`
+                                                                echo "time_'${threshold}'_validation.spearman"
+                                                                head -2 time_${threshold}_validation.spearman
+                                                                echo "the "$((inputnum+1000*10#$split_num))" snp by the "$threshold" threshold got results as AUCROC values: test set as "$relation_bce " and validation set as "$relation_validation_bce"; r2 values: test set as "$relation_r2 " and validation set as "$relation_validation_r2
+                                                                echo "the "$((inputnum+1000*10#$split_num))" snp by the "$threshold" threshold got results as AUCROC values: test set as "$relation_bce " and validation set as "$relation_validation_bce"; r2 values: test set as "$relation_r2 " and validation set as "$relation_validation_r2 >> $time_point.log
+                                                                echo "the "$((inputnum+1000*10#$split_num))" snp by the "$threshold" threshold got results as AUCROC values: test set as "$relation_bce " and validation set as "$relation_validation_bce"; r2 values: test set as "$relation_r2 " and validation set as "$relation_validation_r2 >> ${threshold}.log
+                                                                sort -g -k 2 $threshold.log -o $threshold.log
+                                                                if [ $(echo "$relation_validation_bce > $old_relation_validation_bce" | bc) = 1  ];then
+                                                                    cp time_${threshold}.spearman /storage/zhenghoufengLab/gaisirui/prsice_BMI_african/bce_test.result
+                                                                    cp time_${threshold}_validation.spearman /storage/zhenghoufengLab/gaisirui/prsice_BMI_african/bce_validation.result
+                                                                fi
+                                                                if [ $(echo "$relation_validation_r2 > $old_relation_validation_r2" | bc) = 1  ];then
+                                                                    cp time_${threshold}.spearman /storage/zhenghoufengLab/gaisirui/prsice_BMI_african/r2_test.result
+                                                                    cp time_${threshold}_validation.spearman /storage/zhenghoufengLab/gaisirui/prsice_BMI_african/r2_validation.result
+                                                                fi
+                                                        fi
+                                                        echo "796"
+                                                        #mv time_${threshold}.best all_${threshold}.best
+                                                        #mv time_${threshold}_validation.best all_${threshold}_validation.best
+                                                } &
+                                                done
+                                                wait
+                                        fi
+                                        if [[ $calculate_mod == "Origin" ]] || [[ $with_origin == "True" ]];then
+                                                #awk 'NR==FNR{a[NR]=$1}NR>FNR{print a[FNR]+$1}' ${num}_${split_num}.best all.best > time.best
+                                                #awk 'NR==FNR{a[NR]=$1}NR>FNR{print a[FNR]+$1}' ${num}_${split_num}_validation.best all_validation.best > time_validation.best
+                                                paste time.best ${testfile}_${split_num}.fam > time.spearman
+                                                paste time_validation.best ${validationfile}_${split_num}.fam > time_validation.spearman
+                                                echo "807"
+                                                sed -i '/-9/d' time.spearman
+                                                sed -i '/-9/d' time_validation.spearman
                                                 if [ $logistic = "False" ];then
                                                         old_relation_validation_spearman=-1000
                                                         old_relation_validation_pearson=-1000
                                                         old_relation_validation_r2=-1000
-                                                        relation_spearman=`/home/zhenghoufengLab/gaisirui/miniconda3/bin/python -c 'import spearman;print(spearman.ReadData("time_'${threshold}'.spearman"))'`
-                                                        relation_validation_spearman=`/home/zhenghoufengLab/gaisirui/miniconda3/bin/python -c 'import spearman;print(spearman.ReadData("time_'${threshold}'_validation.spearman"))'`
-                                                        relation_r2=`/home/zhenghoufengLab/gaisirui/miniconda3/bin/python -c 'import r2;print(r2.ReadData("time_'${threshold}'.spearman"))'`
-                                                        relation_validation_r2=`/home/zhenghoufengLab/gaisirui/miniconda3/bin/python -c 'import r2;print(r2.ReadData("time_'${threshold}'_validation.spearman"))'`
-                                                        relation_pearson=`/home/zhenghoufengLab/gaisirui/miniconda3/bin/python -c 'import pearson;print(pearson.ReadData("time_'${threshold}'.spearman"))'`
-                                                        relation_validation_pearson=`/home/zhenghoufengLab/gaisirui/miniconda3/bin/python -c 'import pearson;print(pearson.ReadData("time_'${threshold}'_validation.spearman"))'`
-                                                        echo "the "$((inputnum+1000*10#$split_num))" snp by the "$threshold" threshold got results as spearman values: test set as "$relation_spearman " and validation set as "$relation_validation_spearman"; r2 values: test set as "$relation_r2 " and validation set as "$relation_validation_r2"; pearson values: test set as "$relation_pearson " and validation set as "$relation_validation_pearson
-                                                        echo "the "$((inputnum+1000*10#$split_num))" snp by the "$threshold" threshold got results as spearman values: test set as "$relation_spearman " and validation set as "$relation_validation_spearman"; r2 values: test set as "$relation_r2 " and validation set as "$relation_validation_r2"; pearson values: test set as "$relation_pearson " and validation set as "$relation_validation_pearson >> $time_point.log
-                                                        echo "785"
-                                                        echo "the "$((inputnum+1000*10#$split_num))" snp by the "$threshold" threshold got results as spearman values: test set as "$relation_spearman " and validation set as "$relation_validation_spearman"; r2 values: test set as "$relation_r2 " and validation set as "$relation_validation_r2"; pearson values: test set as "$relation_pearson " and validation set as "$relation_validation_pearson >> ${threshold}.log
-                                                        sort -g -k 2 ${threshold}.log -o ${threshold}.log
+                                                        relation_spearman=`/home/zhenghoufengLab/gaisirui/miniconda3/bin/python -c 'import spearman;print(spearman.ReadData("time.spearman"))'`
+                                                        relation_validation_spearman=`/home/zhenghoufengLab/gaisirui/miniconda3/bin/python -c 'import spearman;print(spearman.ReadData("time_validation.spearman"))'`
+                                                        relation_r2=`/home/zhenghoufengLab/gaisirui/miniconda3/bin/python -c 'import r2;print(r2.ReadData("time.spearman"))'`
+                                                        relation_validation_r2=`/home/zhenghoufengLab/gaisirui/miniconda3/bin/python -c 'import r2;print(r2.ReadData("time_validation.spearman"))'`
+                                                        relation_pearson=`/home/zhenghoufengLab/gaisirui/miniconda3/bin/python -c 'import pearson;print(pearson.ReadData("time.spearman"))'`
+                                                        relation_validation_pearson=`/home/zhenghoufengLab/gaisirui/miniconda3/bin/python -c 'import pearson;print(pearson.ReadData("time_validation.spearman"))'`
+                                                        echo "the "$((inputnum+1000*10#$split_num))" snp got results as spearman values: test set as "$relation_spearman " and validation set as "$relation_validation_spearman"; r2 values: test set as "$relation_r2 " and validation set as "$relation_validation_r2"; pearson values: test set as "$relation_pearson " and validation set as "$relation_validation_pearson
+                                                        echo "818"
+                                                        echo "the "$((inputnum+1000*10#$split_num))" snp threshold got results as spearman values: test set as "$relation_spearman " and validation set as "$relation_validation_spearman"; r2 values: test set as "$relation_r2 " and validation set as "$relation_validation_r2"; pearson values: test set as "$relation_pearson " and validation set as "$relation_validation_pearson >> ${time_point}.log
+                                                        if [ $(echo "$relation_validation_spearman > $old_relation_validation_spearman" | bc) = 1  ];then
+                                                            cp time_'${threshold}'.spearman /storage/zhenghoufengLab/gaisirui/prsice_BMI_african/spearman_test.result
+                                                            cp time_'${threshold}'_validation.spearman /storage/zhenghoufengLab/gaisirui/prsice_BMI_african/spearman_validation.result
+                                                        fi
+                                                        if [ $(echo "$relation_validation_r2 > $old_relation_validation_r2" | bc) = 1  ];then
+                                                            cp time_'${threshold}'.r2 /storage/zhenghoufengLab/gaisirui/prsice_BMI_african/r2_test.result
+                                                            cp time_'${threshold}'_validation.r2 /storage/zhenghoufengLab/gaisirui/prsice_BMI_african/r2_validation.result
+                                                        fi
+                                                        if [ $(echo "$relation_validation_pearson > $old_relation_validation_pearson" | bc) = 1  ];then
+                                                            cp time_'${threshold}'.pearson /storage/zhenghoufengLab/gaisirui/prsice_BMI_african/pearson_test.result
+                                                            cp time_'${threshold}'_validation.pearson /storage/zhenghoufengLab/gaisirui/prsice_BMI_african/pearson_validation.result
+                                                        fi
+                                                        sort -g -k 2 ${time_point}.log -o ${time_point}.log
                                                 else
                                                         old_relation_validation_bce=-1000
                                                         old_relation_validation_r2=-1000
-                                                        relation_bce=`/home/zhenghoufengLab/gaisirui/miniconda3/bin/python -c 'import bce;print(bce.ReadData("time_'${threshold}'.spearman"))'`
-                                                        echo "time_'${threshold}'.spearman"
-                                                        head -2 time_${threshold}.spearman
-                                                        relation_validation_bce=`/home/zhenghoufengLab/gaisirui/miniconda3/bin/python -c 'import bce;print(bce.ReadData("time_'${threshold}'_validation.spearman"))'`
-                                                        echo "time_'${threshold}'_validation.spearman"
-                                                        head -2 time_${threshold}_validation.spearman
-                                                        relation_r2=`/home/zhenghoufengLab/gaisirui/miniconda3/bin/python -c 'import r2;print(r2.ReadData("time_'${threshold}'.spearman"))'`
-                                                        echo "time_'${threshold}'.spearman"
-                                                        head -2 time_${threshold}.spearman
-                                                        relation_validation_r2=`/home/zhenghoufengLab/gaisirui/miniconda3/bin/python -c 'import r2;print(r2.ReadData("time_'${threshold}'_validation.spearman"))'`
-                                                        echo "time_'${threshold}'_validation.spearman"
-                                                        head -2 time_${threshold}_validation.spearman
-                                                        echo "the "$((inputnum+1000*10#$split_num))" snp by the "$threshold" threshold got results as AUCROC values: test set as "$relation_bce " and validation set as "$relation_validation_bce"; r2 values: test set as "$relation_r2 " and validation set as "$relation_validation_r2
-                                                        echo "the "$((inputnum+1000*10#$split_num))" snp by the "$threshold" threshold got results as AUCROC values: test set as "$relation_bce " and validation set as "$relation_validation_bce"; r2 values: test set as "$relation_r2 " and validation set as "$relation_validation_r2 >> $time_point.log
-                                                        echo "the "$((inputnum+1000*10#$split_num))" snp by the "$threshold" threshold got results as AUCROC values: test set as "$relation_bce " and validation set as "$relation_validation_bce"; r2 values: test set as "$relation_r2 " and validation set as "$relation_validation_r2 >> ${threshold}.log
-                                                        sort -g -k 2 $threshold.log -o $threshold.log
+                                                        relation_bce=`/home/zhenghoufengLab/gaisirui/miniconda3/bin/python -c 'import bce;print(bce.ReadData("time.spearman"))'`
+                                                        relation_validation_bce=`/home/zhenghoufengLab/gaisirui/miniconda3/bin/python -c 'import bce;print(bce.ReadData("time_validation.spearman"))'`
+                                                        relation_r2=`/home/zhenghoufengLab/gaisirui/miniconda3/bin/python -c 'import r2;print(r2.ReadData("time.spearman"))'`
+                                                        relation_validation_r2=`/home/zhenghoufengLab/gaisirui/miniconda3/bin/python -c 'import r2;print(r2.ReadData("time_validation.spearman"))'`
+                                                        echo "the "$((inputnum+1000*10#$split_num))" snp got results as AUCROC values: test set as "$relation_bce " and validation set as "$relation_validation_bce
+                                                        echo "the "$((inputnum+1000*10#$split_num))" snp got results as AUCROC values: test set as "$relation_bce " and validation set as "$relation_validation_bce >> ${time_point}.log
+                                                        echo "the "$((inputnum+1000*10#$split_num))" snp got results as AUCROC values: test set as "$relation_bce " and validation set as "$relation_validation_bce"; r2 values: test set as "$relation_r2 " and validation set as "$relation_validation_r2
+                                                        echo "the "$((inputnum+1000*10#$split_num))" snp got results as AUCROC values: test set as "$relation_bce " and validation set as "$relation_validation_bce"; r2 values: test set as "$relation_r2 " and validation set as "$relation_validation_r2 >> $time_point.log
+                                                        echo "the "$((inputnum+1000*10#$split_num))" snp got results as AUCROC values: test set as "$relation_bce " and validation set as "$relation_validation_bce"; r2 values: test set as "$relation_r2 " and validation set as "$relation_validation_r2 >> ${threshold}.log
+                                                        sort -g -k 2 ${time_point}.log -o ${time_point}.log
+                                                        if [ $(echo "$relation_validation_bce > $old_relation_validation_bce" | bc) = 1  ];then
+                                                            cp time_'${threshold}'.bce /storage/zhenghoufengLab/gaisirui/prsice_BMI_african/bce_test.result
+                                                            cp time_'${threshold}'_validation.bce /storage/zhenghoufengLab/gaisirui/prsice_BMI_african/bce_validation.result
+                                                        fi
+                                                        if [ $(echo "$relation_validation_r2 > $old_relation_validation_r2" | bc) = 1  ];then
+                                                            cp time_'${threshold}'.r2 /storage/zhenghoufengLab/gaisirui/prsice_BMI_african/r2_test.result
+                                                            cp time_'${threshold}'_validation.r2 /storage/zhenghoufengLab/gaisirui/prsice_BMI_african/r2_validation.result
+                                                        fi
                                                 fi
-                                                echo "796"
-                                                #mv time_${threshold}.best all_${threshold}.best
-                                                #mv time_${threshold}_validation.best all_${threshold}_validation.best
-                                        } &
-                                        done
-                                        wait
-                                fi
-                                if [[ $calculate_mod == "Origin" ]] || [[ $with_origin == "True" ]];then
-                                        #awk 'NR==FNR{a[NR]=$1}NR>FNR{print a[FNR]+$1}' ${num}_${split_num}.best all.best > time.best
-                                        #awk 'NR==FNR{a[NR]=$1}NR>FNR{print a[FNR]+$1}' ${num}_${split_num}_validation.best all_validation.best > time_validation.best
-                                        paste time.best ${testfile}_${split_num}.fam > time.spearman
-                                        paste time_validation.best ${validationfile}_${split_num}.fam > time_validation.spearman
-                                        echo "807"
-                                        sed -i '/-9/d' time.spearman
-                                        sed -i '/-9/d' time_validation.spearman
-                                        if [ $logistic = "False" ];then
-                                                old_relation_validation_spearman=-1000
-                                                old_relation_validation_pearson=-1000
-                                                old_relation_validation_r2=-1000
-                                                relation_spearman=`/home/zhenghoufengLab/gaisirui/miniconda3/bin/python -c 'import spearman;print(spearman.ReadData("time.spearman"))'`
-                                                relation_validation_spearman=`/home/zhenghoufengLab/gaisirui/miniconda3/bin/python -c 'import spearman;print(spearman.ReadData("time_validation.spearman"))'`
-                                                relation_r2=`/home/zhenghoufengLab/gaisirui/miniconda3/bin/python -c 'import r2;print(r2.ReadData("time.spearman"))'`
-                                                relation_validation_r2=`/home/zhenghoufengLab/gaisirui/miniconda3/bin/python -c 'import r2;print(r2.ReadData("time_validation.spearman"))'`
-                                                relation_pearson=`/home/zhenghoufengLab/gaisirui/miniconda3/bin/python -c 'import pearson;print(pearson.ReadData("time.spearman"))'`
-                                                relation_validation_pearson=`/home/zhenghoufengLab/gaisirui/miniconda3/bin/python -c 'import pearson;print(pearson.ReadData("time_validation.spearman"))'`
-                                                echo "the "$((inputnum+1000*10#$split_num))" snp got results as spearman values: test set as "$relation_spearman " and validation set as "$relation_validation_spearman"; r2 values: test set as "$relation_r2 " and validation set as "$relation_validation_r2"; pearson values: test set as "$relation_pearson " and validation set as "$relation_validation_pearson
-                                                echo "818"
-                                                echo "the "$((inputnum+1000*10#$split_num))" snp threshold got results as spearman values: test set as "$relation_spearman " and validation set as "$relation_validation_spearman"; r2 values: test set as "$relation_r2 " and validation set as "$relation_validation_r2"; pearson values: test set as "$relation_pearson " and validation set as "$relation_validation_pearson >> ${time_point}.log
-                                                sort -g -k 2 ${time_point}.log -o ${time_point}.log
-                                        else
-                                                old_relation_validation_bce=-1000
-                                                old_relation_validation_r2=-1000
-                                                relation_bce=`/home/zhenghoufengLab/gaisirui/miniconda3/bin/python -c 'import bce;print(bce.ReadData("time.spearman"))'`
-                                                relation_validation_bce=`/home/zhenghoufengLab/gaisirui/miniconda3/bin/python -c 'import bce;print(bce.ReadData("time_validation.spearman"))'`
-                                                relation_r2=`/home/zhenghoufengLab/gaisirui/miniconda3/bin/python -c 'import r2;print(r2.ReadData("time.spearman"))'`
-                                                relation_validation_r2=`/home/zhenghoufengLab/gaisirui/miniconda3/bin/python -c 'import r2;print(r2.ReadData("time_validation.spearman"))'`
-                                                echo "the "$((inputnum+1000*10#$split_num))" snp got results as AUCROC values: test set as "$relation_bce " and validation set as "$relation_validation_bce
-                                                echo "the "$((inputnum+1000*10#$split_num))" snp got results as AUCROC values: test set as "$relation_bce " and validation set as "$relation_validation_bce >> ${time_point}.log
-                                                echo "the "$((inputnum+1000*10#$split_num))" snp got results as AUCROC values: test set as "$relation_bce " and validation set as "$relation_validation_bce"; r2 values: test set as "$relation_r2 " and validation set as "$relation_validation_r2
-                                                echo "the "$((inputnum+1000*10#$split_num))" snp got results as AUCROC values: test set as "$relation_bce " and validation set as "$relation_validation_bce"; r2 values: test set as "$relation_r2 " and validation set as "$relation_validation_r2 >> $time_point.log
-                                                echo "the "$((inputnum+1000*10#$split_num))" snp got results as AUCROC values: test set as "$relation_bce " and validation set as "$relation_validation_bce"; r2 values: test set as "$relation_r2 " and validation set as "$relation_validation_r2 >> ${threshold}.log
-                                                sort -g -k 2 ${time_point}.log -o ${time_point}.log
                                         fi
-                                fi
-                                echo "540"
+                                    echo "540"
+                                fi    
                         done
                         if [ $calculate_mod != "Origin" ];then
                                 sort -g -k 2 ${threshold}.log -o ${threshold}.log
@@ -1069,34 +1133,36 @@ else
                         /home/zhenghoufengLab/gaisirui/R-4.0.4/bin/Rscript	/home/zhenghoufengLab/gaisirui/PRSice.R	--dir	/home/zhenghoufengLab/gaisirui/R-4.0.4	--prsice	/home/zhenghoufengLab/gaisirui/PRSice_linux	--base	./${inputfile}.assoc.linear	--target ${testfile}_het	--pheno	${inputfile}.pheno	--thread	1	--beta					--binary-target	F	--stat	BETA	--cov	${inputfile}.sex	--cov-col	@cov1	--cov-factor	@cov1	--all-score -i 1 -l $p_threshold --model het --score std --out ${inputfile}_het
                         paste ${inputfile}_dom.best ${inputfile}_add.best ${inputfile}_rec.best ${inputfile}_het.best > ${inputfile}_all.best
                         awk '{print $1"\t"$4+$8+$12+$16}' ${inputfile}_all.best ${inputfile}_sum.best
-                        paste ${inputfile}_sum.best ${testfile}_${split_num}.fam > time.spearman
-                        if [ $logistic = "False" ];then
-                                relation=`/home/zhenghoufengLab/gaisirui/miniconda3/bin/python -c 'import r2;print(r2.ReadData("time.spearman"))'`
-                                echo "the p_value trying is"$threshold
-                                echo "the p_value trying is"$threshold  >> $time_point.log
-                                if [ $(echo "$old_relation <= $relation"|bc) = 1  ];then
-                                        old_relation=$relation
-                                        echo "the "$threshold" threshold got a better result as "$old_relation
-                                        echo "the "$threshold" threshold got a better result as "$old_relation   >> $time_point.log
+                        if [ $comparemod == "True" ];then
+                                paste ${inputfile}_sum.best ${testfile}_${split_num}.fam > time.spearman
+                                if [ $logistic = "False" ];then
+                                        relation=`/home/zhenghoufengLab/gaisirui/miniconda3/bin/python -c 'import r2;print(r2.ReadData("time.spearman"))'`
+                                        echo "the p_value trying is"$threshold
+                                        echo "the p_value trying is"$threshold  >> $time_point.log
+                                        if [ $(echo "$old_relation <= $relation"|bc) = 1  ];then
+                                                old_relation=$relation
+                                                echo "the "$threshold" threshold got a better result as "$old_relation
+                                                echo "the "$threshold" threshold got a better result as "$old_relation   >> $time_point.log
+                                        else
+                                                echo "the "$threshold" threshold did not get a better result"
+                                                echo "the "$threshold" threshold did not get a better result"   >> $time_point.log
+                                        fi
                                 else
-                                        echo "the "$threshold" threshold did not get a better result"
-                                        echo "the "$threshold" threshold did not get a better result"   >> $time_point.log
+                                        relation=`/home/zhenghoufengLab/gaisirui/miniconda3/bin/python -c 'import bce;print(bce.ReadData("time.spearman"))'`
+                                        echo "the snp trying is"$threshold
+                                        echo "the snp trying is"$threshold    >> $time_point.log
+                                        if [ $(echo "$old_relation <= $relation"|bc) = 1  ];then
+                                                old_relation=$relation
+                                                echo "the "$threshold" threshold got a better result as "$old_relation
+                                                echo "the "$threshold" threshold got a better result as "$old_relation     >> $time_point.log
+                                                cp ${inputfile}_sum.best ${output_file}.prs
+                                        else
+                                                echo "the "$threshold" snp did not get a better result"
+                                                echo "the "$threshold" snp did not get a better result"     >> $time_point.log
+                                        fi
                                 fi
-                        else
-                                relation=`/home/zhenghoufengLab/gaisirui/miniconda3/bin/python -c 'import bce;print(bce.ReadData("time.spearman"))'`
-                                echo "the snp trying is"$threshold
-                                echo "the snp trying is"$threshold    >> $time_point.log
-                                if [ $(echo "$old_relation <= $relation"|bc) = 1  ];then
-                                        old_relation=$relation
-                                        echo "the "$threshold" threshold got a better result as "$old_relation
-                                        echo "the "$threshold" threshold got a better result as "$old_relation     >> $time_point.log
-                                        cp ${inputfile}_sum.best ${output_file}.prs
-                                else
-                                        echo "the "$threshold" snp did not get a better result"
-                                        echo "the "$threshold" snp did not get a better result"     >> $time_point.log
-                                fi
+                                rm ${num}_${split_num}.best ${num}_${split_num}.txt ${num}_${split_num}.ped ${num}_${split_num}.map ${num}_${split_num}.fam ${num}_${split_num}.bim ${num}_${split_num}.bed
                         fi
-                        rm ${num}_${split_num}.best ${num}_${split_num}.txt ${num}_${split_num}.ped ${num}_${split_num}.map ${num}_${split_num}.fam ${num}_${split_num}.bim ${num}_${split_num}.bed
                 done
         fi
 fi

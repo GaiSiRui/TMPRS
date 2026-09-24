@@ -76,13 +76,9 @@ def max_with_source(x, y):
         return y
 
 def workers(name, pool_list, assoc_combine, threshold, bim, fam, args, origin_PRS, the_type):
-    #print(origin_PRS, "origin_PRS")
     PRS = np.zeros_like(fam.loc[:, "status"])
     for row in assoc_combine.itertuples():
-        #print(row, "row")
-        print(row.non_additive_point * 100, "row.non_additive_point * 100")
-        print(pool_list, "pool_list", type(pool_list))
-        if row.non_additive_point * 100 > float(pool_list):
+        if isinstance(type(row.non_additive_point), float) and row.non_additive_point * 100 > float(pool_list):
             if row.non_additive == "rec":
                 if row.P_REC <= threshold and row.P_REC > threshold - args.interval:
                     #print(row.SNP, row.P_REC, row.non_additive_point * 100, pool_list, "rec")
@@ -129,7 +125,7 @@ def workers(name, pool_list, assoc_combine, threshold, bim, fam, args, origin_PR
                                     #PRS[individual] = origin_PRS[individual] + row.beta_DOM
                                     origin_PRS[individual] = PRS[individual]
 
-        else:
+        elif isinstance(type(row.non_additive_point), float):
             if row.P_ADD <= threshold and row.P_ADD > threshold - args.interval:
                 if the_type == "test":
                     with PyPlink(args.test_file) as bed:
@@ -213,41 +209,47 @@ def mean(bfile, args):
         bim = bed.get_bim()
         fam = bed.get_fam()
         # Iterating over all loci
-        for loci_name, genotypes in bed:
-            pass
-
-        sample_pheno = adjusted_pheno.set_index(['FID', 'IID'])['PHENO']
+        #sample_pheno = adjusted_pheno.set_index(['FID', 'IID'])['PHENO']
         # Getting the genotypes of a single marker (numpy.ndarray)
         for idx, (snp_id, genotypes) in enumerate(bed):
-            print(type(snp_info))          # 查看类型
-            print(snp_info)               # 查看内容
-            print(len(snp_info))          # 查看长度
-            print(type(genotypes))          # 查看类型
-            print(genotypes)               # 查看内容
-            print(len(genotypes))          # 查看长度
             chrom = bim.iloc[idx]['chrom']
             cm_pos = bim.iloc[idx]['cm']
             phys_pos = bim.iloc[idx]['pos']
             a1 = bim.iloc[idx]['a1']
             a2 = bim.iloc[idx]['a2']
             #break
-            snp_info = bim_indexed.loc[snp_id]
-            chrom = snp_info['chrom']
-            cm_pos = snp_info['cm']
-            phys_pos = snp_info['pos']
-            a1 = snp_info['a1']
-            a2 = snp_info['a2']
-            #for (chrom, snp_id, cm_pos, phys_pos, a1, a2), genotypes in bed:
             df = pd.DataFrame({
-                'FID': bed.fid,
-                'IID': bed.iid,
+                'FID': fam.fid,
+                'IID': fam.iid,
                 'genotype': genotypes
             })
-            df = df.set_index(['FID', 'IID'])
-            df['adjusted_pheno'] = sample_pheno
+            #df = df.set_index(['FID', 'IID', 'genotype'])
+            #print(df, "df240")
+            #sample_pheno.columns = ['FID', 'IID', 'pheno']
+
+            # 1. 转成带列的 DataFrame
+            sp = sample_pheno.rename('adjusted_pheno').reset_index()
+            sp.columns = ['FID', 'IID', 'adjusted_pheno']   # 强制按位置命名
+
+            # 2. 类型对齐
+            sp['FID'] = sp['FID'].astype(str)
+            sp['IID'] = sp['IID'].astype(str)
+            df['FID'] = df['FID'].astype(str)
+            df['IID'] = df['IID'].astype(str)
+
+            # 3. 合并
+            df = df.merge(sp, on=['FID', 'IID'], how='left')
+
+            # 4. 自查
+            #df = df.merge(sample_pheno[['FID','IID','pheno']], on=['FID','IID'], how='left')
+            #df['adjusted_pheno'] = sample_pheno
+            #print(df, "df242")
             df = df[df['genotype'] != -1].copy()
+            print(df, "df244")
             df['genotype'] = df['genotype'].round().astype(int)
+            print(df, "df246")
             means = df.groupby('genotype')['adjusted_pheno'].mean()
+            print(means)
             results.append({
                 'SNP': snp_id,
                 'chrom': chrom,
