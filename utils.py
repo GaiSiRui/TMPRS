@@ -80,7 +80,9 @@ def workers(name, pool_list, assoc_combine, threshold, bim, fam, args, origin_PR
     PRS = np.zeros_like(fam.loc[:, "status"])
     for row in assoc_combine.itertuples():
         #print(row, "row")
-        if row.non_additive_point * 100 > pool_list:
+        print(row.non_additive_point * 100, "row.non_additive_point * 100")
+        print(pool_list, "pool_list", type(pool_list))
+        if row.non_additive_point * 100 > float(pool_list):
             if row.non_additive == "rec":
                 if row.P_REC <= threshold and row.P_REC > threshold - args.interval:
                     #print(row.SNP, row.P_REC, row.non_additive_point * 100, pool_list, "rec")
