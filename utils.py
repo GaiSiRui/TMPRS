@@ -245,11 +245,8 @@ def mean(bfile, args):
             #df['adjusted_pheno'] = sample_pheno
             #print(df, "df242")
             df = df[df['genotype'] != -1].copy()
-            print(df, "df244")
             df['genotype'] = df['genotype'].round().astype(int)
-            print(df, "df246")
             means = df.groupby('genotype')['adjusted_pheno'].mean()
-            print(means)
             results.append({
                 'SNP': snp_id,
                 'chrom': chrom,
