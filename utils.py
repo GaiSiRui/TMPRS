@@ -77,8 +77,9 @@ def max_with_source(x, y):
 
 def workers(name, pool_list, assoc_combine, threshold, bim, fam, args, origin_PRS, the_type):
     PRS = np.zeros_like(fam.loc[:, "status"])
+    print("80")
     for row in assoc_combine.itertuples():
-        if isinstance(type(row.non_additive_point), float) and row.non_additive_point * 100 > float(pool_list):
+        if isinstance(row.non_additive_point, float) and row.non_additive_point * 100 > float(pool_list):
             if row.non_additive == "rec":
                 if row.P_REC <= threshold and row.P_REC > threshold - args.interval:
                     #print(row.SNP, row.P_REC, row.non_additive_point * 100, pool_list, "rec")
@@ -89,16 +90,19 @@ def workers(name, pool_list, assoc_combine, threshold, bim, fam, args, origin_PR
                             for individual in range(len(origin_PRS)):
                                 if geno_data[individual] == 2:
                                     PRS[individual] = origin_PRS[individual] + row.beta_REC * HAM(row.P_REC)
+                                    print(PRS[individual], "92")
                                     #PRS[individual] = origin_PRS[individual] + row.beta_REC
                                     origin_PRS[individual] = PRS[individual]
 
                     else:
+                        print(args.validation_file, "args.validation_file")
                         with PyPlink(args.validation_file) as bed:
                             geno_data = bed.get_geno_marker(row.SNP)
 
                             for individual in range(len(origin_PRS)):
                                 if geno_data[individual] == 2:
                                     PRS[individual] = origin_PRS[individual] + row.beta_REC * HAM(row.P_REC)
+                                    print(PRS[individual], "103")
                                     #PRS[individual] = origin_PRS[individual] + row.beta_REC
                                     origin_PRS[individual] = PRS[individual]
 
@@ -112,6 +116,7 @@ def workers(name, pool_list, assoc_combine, threshold, bim, fam, args, origin_PR
                             for individual in range(len(origin_PRS)):
                                 if geno_data[individual] == 2 or geno_data[individual] == 1:
                                     PRS[individual] = origin_PRS[individual] + row.beta_DOM * HAM(row.P_DOM)
+                                    print(PRS[individual], "117")
                                     #PRS[individual] = origin_PRS[individual] + row.beta_DOM
                                     origin_PRS[individual] = PRS[individual]
 
@@ -122,10 +127,11 @@ def workers(name, pool_list, assoc_combine, threshold, bim, fam, args, origin_PR
                             for individual in range(len(origin_PRS)):
                                 if geno_data[individual] == 2 or geno_data[individual] == 1:
                                     PRS[individual] = origin_PRS[individual] + row.beta_DOM * HAM(row.P_DOM)
+                                    print(PRS[individual], "128")
                                     #PRS[individual] = origin_PRS[individual] + row.beta_DOM
                                     origin_PRS[individual] = PRS[individual]
 
-        elif isinstance(type(row.non_additive_point), float):
+        elif isinstance(row.non_additive_point, float):
             if row.P_ADD <= threshold and row.P_ADD > threshold - args.interval:
                 if the_type == "test":
                     with PyPlink(args.test_file) as bed:
@@ -134,11 +140,13 @@ def workers(name, pool_list, assoc_combine, threshold, bim, fam, args, origin_PR
                         for individual in range(len(origin_PRS)):
                             if geno_data[individual] == 2:
                                 PRS[individual] = origin_PRS[individual] + row.beta_ADD * 2 * HAM(row.P_ADD)
+                                print(PRS[individual], "140")
                                 #PRS[individual] = origin_PRS[individual] + row.beta_ADD * 2
                                 origin_PRS[individual] = PRS[individual]
 
                             elif geno_data[individual] == 1:
                                 PRS[individual] = origin_PRS[individual] + row.beta_ADD * HAM(row.P_ADD)
+                                print(PRS[individual], "147")
                                 #PRS[individual] = origin_PRS[individual] + row.beta_ADD
                                 origin_PRS[individual] = PRS[individual]
 
@@ -149,13 +157,17 @@ def workers(name, pool_list, assoc_combine, threshold, bim, fam, args, origin_PR
                         for individual in range(len(origin_PRS)):
                             if geno_data[individual] == 2:
                                 PRS[individual] = origin_PRS[individual] + row.beta_ADD * 2 * HAM(row.P_ADD)
+                                print(PRS[individual], "158")
                                 #PRS[individual] = origin_PRS[individual] + row.beta_ADD * 2
                                 origin_PRS[individual] = PRS[individual]
 
                             elif geno_data[individual] == 1:
                                 PRS[individual] = origin_PRS[individual] + row.beta_ADD * HAM(row.P_ADD)
+                                print(PRS[individual], "164")
                                 #PRS[individual] = origin_PRS[individual] + row.beta_ADD
                                 origin_PRS[individual] = PRS[individual]
+        else:
+            print(row, "row")
 
     return PRS
 

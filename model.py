@@ -510,8 +510,6 @@ def after_summary(args, assoc_combine):
                 for k in np.arange(args.begin_site, args.end_site, args.site_step):
                     a_origin, b_origin = utils.preprocess_for_roc(fam.loc[:, "status"], origin_PRS[j])
                     a_origin_validation, b_origin_validation = utils.preprocess_for_roc(fam_validation.loc[:, "status"], origin_PRS_validation[j])
-                    #print(utils.bce(a_origin, b_origin), k, i, a_origin, b_origin)
-                    #print(utils.bce(a_origin_validation, b_origin_validation), k, i, a_origin_validation, b_origin_validation, "validation")
                     if utils.bce(a_origin_validation, b_origin_validation) > origin_result:
                         print("result:", utils.bce(a_origin, b_origin))
                         print("result:", utils.bce(a_origin_validation, b_origin_validation))
