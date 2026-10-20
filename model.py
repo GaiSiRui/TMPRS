@@ -98,10 +98,10 @@ def before_summary(args):
             file = args.input_file + ".assoc.add"
             assoc_add.to_csv(file, sep = "\t", index=False)
 
-            if args.clump == False:
-                    os.system("plink --bfile " + args.input_file + " --keep " + args.input_file + ".list --clump-p1 1 --clump-r2 0.1 --clump-kb 250 --clump " + args.input_file + ".assoc.add --clump-snp-field SNP --clump-field P")
+            if args.clump == "False":
+                    os.system("plink --bfile " + args.input_file + " --keep " + args.input_file + ".list --clump-p1 1 --clump-r2 0.1 --clump-kb 250 --clump " + args.input_file + ".assoc.add --clump-snp-field SNP --clump-field P --out" + args.input_file + ".clumped")
 
-            plink_clumped = pd.read_csv("plink.clumped", sep=r'\s+')
+            plink_clumped = pd.read_csv(args.input_file + ".clumped", sep=r'\s+')
             assoc_add = assoc_add[assoc_add['P'] < 0.5]
 
             # 获取筛选后的 SNP 列表
@@ -132,10 +132,10 @@ def before_summary(args):
             assoc_add = assoc_logistic[assoc_logistic['TEST'] == 'ADD']
             assoc_logistic = pd.concat([assoc_dom, assoc_rec, assoc_add])
 
-            if args.clump == False:
-                    os.system("plink --bfile " + args.input_file + " --keep " + args.input_file + ".list --clump-p1 1 --clump-r2 0.1 --clump-kb 250 --clump " + args.input_file + ".assoc.logistic  --clump-snp-field SNP --clump-field P")
+            if args.clump == "False":
+                    os.system("plink --bfile " + args.input_file + " --keep " + args.input_file + ".list --clump-p1 1 --clump-r2 0.1 --clump-kb 250 --clump " + args.input_file + ".assoc.logistic  --clump-snp-field SNP --clump-field P --out" + args.input_file + ".clumped")
 
-            plink_clumped = pd.read_csv("plink.clumped", sep=r'\s+')
+            plink_clumped = pd.read_csv(args.input_file + ".clumped", sep=r'\s+')
             clumped_snps = plink_clumped['SNP'].tolist()
             assoc_add = assoc_logistic[assoc_logistic['TEST'] == 'ADD']
             assoc_add = assoc_add[assoc_add['P'] != "NA"]
@@ -186,10 +186,10 @@ def before_summary(args):
             file = args.input_file + ".assoc.add"
             assoc_add.to_csv(file, sep = "\t", index=False)
 
-            if args.clump == False:
-                    os.system("plink --bfile " + args.input_file + " --keep " + args.input_file + ".list --clump-p1 1 --clump-r2 0.1 --clump-kb 250 --clump " + args.input_file + ".assoc.add --clump-snp-field SNP --clump-field P")
+            if args.clump == "False":
+                    os.system("plink --bfile " + args.input_file + " --keep " + args.input_file + ".list --clump-p1 1 --clump-r2 0.1 --clump-kb 250 --clump " + args.input_file + ".assoc.add --clump-snp-field SNP --clump-field P --out" + args.input_file + ".clumped")
 
-            plink_clumped = pd.read_csv("plink.clumped", sep=r'\s+')
+            plink_clumped = pd.read_csv(args.input_file + ".clumped", sep=r'\s+')
             assoc_add = assoc_add[assoc_add['P'] < 0.5]
 
             # 获取筛选后的 SNP 列表
@@ -220,10 +220,10 @@ def before_summary(args):
             assoc_add = assoc_linear[assoc_linear['TEST'] == 'ADD']
             assoc_linear = pd.concat([assoc_dom, assoc_rec, assoc_add])
 
-            if args.clump == False:
-                os.system("plink --bfile " + args.input_file + " --keep " + args.input_file + ".list --clump-p1 1 --clump-r2 0.1 --clump-kb 250 --clump " + args.input_file + ".assoc.linear  --clump-snp-field SNP --clump-field P")
+            if args.clump == "False":
+                os.system("plink --bfile " + args.input_file + " --keep " + args.input_file + ".list --clump-p1 1 --clump-r2 0.1 --clump-kb 250 --clump " + args.input_file + ".assoc.linear  --clump-snp-field SNP --clump-field P --out" + args.input_file + ".clumped")
 
-            plink_clumped = pd.read_csv("plink.clumped", sep=r'\s+')
+            plink_clumped = pd.read_csv(args.input_file + ".clumped", sep=r'\s+')
             clumped_snps = plink_clumped['SNP'].tolist()
             assoc_add = assoc_linear[assoc_linear['TEST'] == 'ADD']
             assoc_add = assoc_add[assoc_add['P'] != "NA"]
@@ -510,7 +510,20 @@ def after_summary(args, assoc_combine):
                 for k in np.arange(args.begin_site, args.end_site, args.site_step):
                     a_origin, b_origin = utils.preprocess_for_roc(fam.loc[:, "status"], origin_PRS[j])
                     a_origin_validation, b_origin_validation = utils.preprocess_for_roc(fam_validation.loc[:, "status"], origin_PRS_validation[j])
-                    if utils.bce(a_origin_validation, b_origin_validation) > origin_result:
+                    print(a_origin, "a_origin", b_origin, "b_origin")
+                    has_nan_a = pd.isna(a_origin)
+                    has_nan_b = pd.isna(b_origin)
+
+                    while hasattr(has_nan_a, "any"):
+                        has_nan_a = has_nan_a.any()
+
+                    while hasattr(has_nan_b, "any"):
+                        has_nan_b = has_nan_b.any()
+
+                    if has_nan_a and has_nan_b:
+                        print("result: non")
+
+                    elif utils.bce(a_origin_validation, b_origin_validation) > origin_result:
                         print("result:", utils.bce(a_origin, b_origin))
                         print("result:", utils.bce(a_origin_validation, b_origin_validation))
                         origin_result = utils.bce(a_origin_validation, b_origin_validation)
