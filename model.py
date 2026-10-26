@@ -99,7 +99,7 @@ def before_summary(args):
             assoc_add.to_csv(file, sep = "\t", index=False)
 
             if args.clump == "False":
-                    os.system("plink --bfile " + args.input_file + " --keep " + args.input_file + ".list --clump-p1 1 --clump-r2 0.1 --clump-kb 250 --clump " + args.input_file + ".assoc.add --clump-snp-field SNP --clump-field P --out" + args.input_file + ".clumped")
+                    os.system("plink --bfile " + args.input_file + " --keep " + args.input_file + ".list --clump-p1 1 --clump-r2 0.1 --clump-kb 250 --clump " + args.input_file + ".assoc.add --clump-snp-field SNP --clump-field P --out " + args.input_file + ".clumped")
 
             plink_clumped = pd.read_csv(args.input_file + ".clumped", sep=r'\s+')
             assoc_add = assoc_add[assoc_add['P'] < 0.5]
@@ -133,7 +133,7 @@ def before_summary(args):
             assoc_logistic = pd.concat([assoc_dom, assoc_rec, assoc_add])
 
             if args.clump == "False":
-                    os.system("plink --bfile " + args.input_file + " --keep " + args.input_file + ".list --clump-p1 1 --clump-r2 0.1 --clump-kb 250 --clump " + args.input_file + ".assoc.logistic  --clump-snp-field SNP --clump-field P --out" + args.input_file + ".clumped")
+                    os.system("plink --bfile " + args.input_file + " --keep " + args.input_file + ".list --clump-p1 1 --clump-r2 0.1 --clump-kb 250 --clump " + args.input_file + ".assoc.logistic  --clump-snp-field SNP --clump-field P --out " + args.input_file + ".clumped")
 
             plink_clumped = pd.read_csv(args.input_file + ".clumped", sep=r'\s+')
             clumped_snps = plink_clumped['SNP'].tolist()
@@ -187,7 +187,7 @@ def before_summary(args):
             assoc_add.to_csv(file, sep = "\t", index=False)
 
             if args.clump == "False":
-                    os.system("plink --bfile " + args.input_file + " --keep " + args.input_file + ".list --clump-p1 1 --clump-r2 0.1 --clump-kb 250 --clump " + args.input_file + ".assoc.add --clump-snp-field SNP --clump-field P --out" + args.input_file + ".clumped")
+                    os.system("plink --bfile " + args.input_file + " --keep " + args.input_file + ".list --clump-p1 1 --clump-r2 0.1 --clump-kb 250 --clump " + args.input_file + ".assoc.add --clump-snp-field SNP --clump-field P --out " + args.input_file + ".clumped")
 
             plink_clumped = pd.read_csv(args.input_file + ".clumped", sep=r'\s+')
             assoc_add = assoc_add[assoc_add['P'] < 0.5]
@@ -221,7 +221,7 @@ def before_summary(args):
             assoc_linear = pd.concat([assoc_dom, assoc_rec, assoc_add])
 
             if args.clump == "False":
-                os.system("plink --bfile " + args.input_file + " --keep " + args.input_file + ".list --clump-p1 1 --clump-r2 0.1 --clump-kb 250 --clump " + args.input_file + ".assoc.linear  --clump-snp-field SNP --clump-field P --out" + args.input_file + ".clumped")
+                os.system("plink --bfile " + args.input_file + " --keep " + args.input_file + ".list --clump-p1 1 --clump-r2 0.1 --clump-kb 250 --clump " + args.input_file + ".assoc.linear  --clump-snp-field SNP --clump-field P --out " + args.input_file + ".clumped")
 
             plink_clumped = pd.read_csv(args.input_file + ".clumped", sep=r'\s+')
             clumped_snps = plink_clumped['SNP'].tolist()
@@ -472,6 +472,7 @@ def after_summary(args, assoc_combine):
 
             for loci_name, genotypes in bed:
                 for loci_name, genotypes in bed_validation:
+                    print("475")
                     pass
 
             #pool_list = []
@@ -479,58 +480,70 @@ def after_summary(args, assoc_combine):
             #bim.to_csv("example_bim.csv", index=False, encoding="utf-8", sep="\t")
             origin_PRS = []
             origin_PRS_validation = []
+
             for k in np.arange(args.begin_site, args.end_site, args.site_step):
                 origin_PRS.append(np.zeros_like(fam.loc[:, "status"]))
                 origin_PRS_validation.append(np.zeros_like(fam_validation.loc[:, "status"]))
+                print("486")
 
             origin_result = 0.5
 
             for i in np.arange(args.lower, args.threshold_t, args.interval):
+                print(i, "491")
                 with Pool(processes=int((args.end_site - args.begin_site) / args.site_step)) as pool:
                     pool_list = []
                     pool_list_validation = []
                     j = 0
 
+                    print("498")
                     for k in np.arange(args.begin_site, args.end_site, args.site_step):
                         pool_list.append(("thread " + str(k), k, assoc_combine, i, bim, fam, args, origin_PRS[j], "test"))
                         pool_list_validation.append(("thread " + str(k), k, assoc_combine, i, bim_validation, fam_validation, args, origin_PRS_validation[j], "validation"))
                         j += 1
 
+                    print("504")
                     #pool.starmap(utils.workers, pool_list)
                     results = pool.starmap(utils.workers, pool_list)
                     results_validation = pool.starmap(utils.workers, pool_list_validation)
                     j = 0
 
+                    print("510")
                     for k in np.arange(args.begin_site, args.end_site, args.site_step):
                         origin_PRS[j] = results[j]
                         origin_PRS_validation[j] = results_validation[j]
                         j+=1
 
+                print("516")
                 j = 0
                 for k in np.arange(args.begin_site, args.end_site, args.site_step):
                     a_origin, b_origin = utils.preprocess_for_roc(fam.loc[:, "status"], origin_PRS[j])
                     a_origin_validation, b_origin_validation = utils.preprocess_for_roc(fam_validation.loc[:, "status"], origin_PRS_validation[j])
                     print(a_origin, "a_origin", b_origin, "b_origin")
+                    print("522")
                     has_nan_a = pd.isna(a_origin)
                     has_nan_b = pd.isna(b_origin)
 
                     while hasattr(has_nan_a, "any"):
                         has_nan_a = has_nan_a.any()
+                        print("528")
 
                     while hasattr(has_nan_b, "any"):
                         has_nan_b = has_nan_b.any()
 
                     if has_nan_a and has_nan_b:
+                        print("534")
                         print("result: non")
 
                     elif utils.bce(a_origin_validation, b_origin_validation) > origin_result:
                         print("result:", utils.bce(a_origin, b_origin))
                         print("result:", utils.bce(a_origin_validation, b_origin_validation))
+                        print("540")
                         origin_result = utils.bce(a_origin_validation, b_origin_validation)
 
                     else:
                         print("result:", utils.bce(a_origin, b_origin), "non")
                         print("result:", utils.bce(a_origin_validation, b_origin_validation), "non")
+                        print("546")
 
                     j+=1
 
