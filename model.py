@@ -388,10 +388,10 @@ def before_summary(args):
         })
 
     if args.calculate_mod == "mean":
-        pheno = pd.read_csv(args.pheno, sep="\s+")
+        pheno = pd.read_csv(args.pheno, sep=r"\s+")
         if args.covar != False:
-            covar = pd.read_csv(args.covar, sep="\s+")
-        geno_name = pd.read_csv(args.input_file + ".bim", header = None , sep="\s+", usecols=[1])
+            covar = pd.read_csv(args.covar, sep=r"\s+")
+        geno_name = pd.read_csv(args.input_file + ".bim", header = None , sep=r"\s+", usecols=[1])
         os.system("plink --bfile " + args.input_file + " --recode --out " + args.input_file)
         
         with open('mean.csv', mode='w', newline='') as file:
@@ -408,7 +408,7 @@ def before_summary(args):
             columns_to_load = ["FID", "IID", target_snp.iloc[0]]
         
             try:
-                geno = pd.read_csv(args.input_file + ".ped", sep="\s+", usecols=columns_to_load)
+                geno = pd.read_csv(args.input_file + ".ped", sep=r"\s+", usecols=columns_to_load)
         
             except Exception as e:
                 print("error", e)
@@ -490,7 +490,7 @@ def after_summary(args, assoc_combine):
 
             for i in np.arange(args.lower, args.threshold_t, args.interval):
                 print(i, "491")
-                with Pool(processes=int((args.end_site - args.begin_site) / args.site_step)) as pool:
+                with Pool(processes=max(1, int((args.end_site - args.begin_site) / args.site_step))) as pool:
                     pool_list = []
                     pool_list_validation = []
                     j = 0
@@ -520,15 +520,9 @@ def after_summary(args, assoc_combine):
                     a_origin_validation, b_origin_validation = utils.preprocess_for_roc(fam_validation.loc[:, "status"], origin_PRS_validation[j])
                     print(a_origin, "a_origin", b_origin, "b_origin")
                     print("522")
-                    has_nan_a = pd.isna(a_origin)
-                    has_nan_b = pd.isna(b_origin)
-
-                    while hasattr(has_nan_a, "any"):
-                        has_nan_a = has_nan_a.any()
-                        print("528")
-
-                    while hasattr(has_nan_b, "any"):
-                        has_nan_b = has_nan_b.any()
+                    # pd.isna -> 布尔数组；np.any 归约成标量；bool() 转成真正的 Python bool
+                    has_nan_a = bool(np.any(pd.isna(a_origin)))
+                    has_nan_b = bool(np.any(pd.isna(b_origin)))
 
                     if has_nan_a and has_nan_b:
                         print("534")
