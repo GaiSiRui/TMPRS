@@ -36,7 +36,6 @@ import gc
 def main(args):
     assoc_combine = before_summary(args)
     #assoc_combine = pd.read_csv('alzheimer_train.csv', sep="\t")
-    #print(assoc_combine)
     utils.mean(args.input_file, args)
 
     if args.comparemod == True:
@@ -112,19 +111,19 @@ def before_summary(args):
             snps = assoc.iloc[1, :]
 
         else:
-            if args.covar == False:
+            if args.covar == "False":
                 os.system("plink --bfile " + args.input_file + "  --pheno " + args.input_file + ".pheno --keep " + args.input_file + ".list --geno 0.05 --maf 0.05 --out " + args.input_file + " --logistic dominant keep-pheno-on-missing-cov")
             else:
                 os.system("plink --bfile " + args.input_file + "  --pheno " + args.input_file + ".pheno --keep " + args.input_file + ".list --geno 0.05 --maf 0.05 --out " + args.input_file + " --logistic dominant hide-covar --covar " + args.covar + " keep-pheno-on-missing-cov")
             assoc_logistic = pd.read_csv(args.input_file + ".assoc.logistic", sep=r'\s+')
             assoc_dom = assoc_logistic[assoc_logistic['TEST'] == 'DOM']
-            if args.covar == False:
+            if args.covar == "False":
                 os.system("plink --bfile " + args.input_file + "  --pheno " + args.input_file + ".pheno --keep " + args.input_file + ".list --geno 0.05 --maf 0.05 --out " + args.input_file + " --logistic recessive keep-pheno-on-missing-cov")
             else:
                 os.system("plink --bfile " + args.input_file + "  --pheno " + args.input_file + ".pheno --keep " + args.input_file + ".list --geno 0.05 --maf 0.05 --out " + args.input_file + " --logistic recessive hide-covar --covar " + args.covar + " keep-pheno-on-missing-cov")
             assoc_logistic = pd.read_csv(args.input_file + ".assoc.logistic", sep=r'\s+')
             assoc_rec = assoc_logistic[assoc_logistic['TEST'] == 'REC']
-            if args.covar == False:
+            if args.covar == "False":
                 os.system("plink --bfile " + args.input_file + "  --pheno " + args.input_file + ".pheno --keep " + args.input_file + ".list --geno 0.05 --maf 0.05 --out " + args.input_file + " --logistic keep-pheno-on-missing-cov")
             else:
                 os.system("plink --bfile " + args.input_file + "  --pheno " + args.input_file + ".pheno --keep " + args.input_file + ".list --geno 0.05 --maf 0.05 --out " + args.input_file + " --logistic hide-covar --covar " + args.covar + " keep-pheno-on-missing-cov")
@@ -200,19 +199,19 @@ def before_summary(args):
             snps = assoc.iloc[1, :]
 
         else:
-            if args.covar == False:
+            if args.covar == "False":
                 os.system("plink --bfile " + args.input_file + "  --pheno " + args.input_file + ".pheno --keep " + args.input_file + ".list --geno 0.05 --maf 0.05 --out " + args.input_file + " --linear dominant keep-pheno-on-missing-cov")
             else:
                 os.system("plink --bfile " + args.input_file + "  --pheno " + args.input_file + ".pheno --keep " + args.input_file + ".list --geno 0.05 --maf 0.05 --out " + args.input_file + " --linear dominant hide-covar --covar " + args.covar + " keep-pheno-on-missing-cov")
             assoc_linear = pd.read_csv(args.input_file + ".assoc.linear", sep=r'\s+')
             assoc_dom = assoc_linear[assoc_linear['TEST'] == 'DOM']
-            if args.covar == False:
+            if args.covar == "False":
                 os.system("plink --bfile " + args.input_file + "  --pheno " + args.input_file + ".pheno --keep " + args.input_file + ".list --geno 0.05 --maf 0.05 --out " + args.input_file + " --linear recessive hide-covar --covar args.covar keep-pheno-on-missing-cov")
             else:
                 os.system("plink --bfile " + args.input_file + "  --pheno " + args.input_file + ".pheno --keep " + args.input_file + ".list --geno 0.05 --maf 0.05 --out " + args.input_file + " --linear recessive hide-covar --covar " + args.covar + " keep-pheno-on-missing-cov")
             assoc_linear = pd.read_csv(args.input_file + ".assoc.linear", sep=r'\s+')
             assoc_rec = assoc_linear[assoc_linear['TEST'] == 'REC']
-            if args.covar == False:
+            if args.covar == "False":
                 os.system("plink --bfile " + args.input_file + "  --pheno " + args.input_file + ".pheno --keep " + args.input_file + ".list --geno 0.05 --maf 0.05 --out " + args.input_file + " --linear keep-pheno-on-missing-cov")
             else:
                 os.system("plink --bfile " + args.input_file + "  --pheno " + args.input_file + ".pheno --keep " + args.input_file + ".list --geno 0.05 --maf 0.05 --out " + args.input_file + " --linear hide-covar --covar " + args.covar + " keep-pheno-on-missing-cov")
@@ -400,7 +399,7 @@ def before_summary(args):
             file.close()
         
         for rs_number, rs_name in geno_name.iterrows():
-            if args.covar == False:
+            if args.covar == "False":
                 data = pheno
             else:
                 data = pd.merge(pheno, covar, on=["FID", "IID"])
@@ -472,6 +471,7 @@ def after_summary(args, assoc_combine):
 
             for loci_name, genotypes in bed:
                 for loci_name, genotypes in bed_validation:
+                    print("475")
                     pass
 
             #pool_list = []
@@ -483,49 +483,60 @@ def after_summary(args, assoc_combine):
             for k in np.arange(args.begin_site, args.end_site, args.site_step):
                 origin_PRS.append(np.zeros_like(fam.loc[:, "status"]))
                 origin_PRS_validation.append(np.zeros_like(fam_validation.loc[:, "status"]))
+                print("486")
 
             origin_result = 0.5
 
             for i in np.arange(args.lower, args.threshold_t, args.interval):
+                print(i, "491")
                 with Pool(processes=max(1, int((args.end_site - args.begin_site) / args.site_step))) as pool:
                     pool_list = []
                     pool_list_validation = []
                     j = 0
 
+                    print("498")
                     for k in np.arange(args.begin_site, args.end_site, args.site_step):
                         pool_list.append(("thread " + str(k), k, assoc_combine, i, bim, fam, args, origin_PRS[j], "test"))
                         pool_list_validation.append(("thread " + str(k), k, assoc_combine, i, bim_validation, fam_validation, args, origin_PRS_validation[j], "validation"))
                         j += 1
 
+                    print("504")
                     #pool.starmap(utils.workers, pool_list)
                     results = pool.starmap(utils.workers, pool_list)
                     results_validation = pool.starmap(utils.workers, pool_list_validation)
                     j = 0
 
+                    print("510")
                     for k in np.arange(args.begin_site, args.end_site, args.site_step):
                         origin_PRS[j] = results[j]
                         origin_PRS_validation[j] = results_validation[j]
                         j+=1
 
+                print("516")
                 j = 0
                 for k in np.arange(args.begin_site, args.end_site, args.site_step):
                     a_origin, b_origin = utils.preprocess_for_roc(fam.loc[:, "status"], origin_PRS[j])
                     a_origin_validation, b_origin_validation = utils.preprocess_for_roc(fam_validation.loc[:, "status"], origin_PRS_validation[j])
+                    print(a_origin, "a_origin", b_origin, "b_origin")
+                    print("522")
                     # pd.isna -> 布尔数组；np.any 归约成标量；bool() 转成真正的 Python bool
                     has_nan_a = bool(np.any(pd.isna(a_origin)))
                     has_nan_b = bool(np.any(pd.isna(b_origin)))
 
                     if has_nan_a and has_nan_b:
+                        print("534")
                         print("result: non")
 
                     elif utils.bce(a_origin_validation, b_origin_validation) > origin_result:
                         print("result:", utils.bce(a_origin, b_origin))
                         print("result:", utils.bce(a_origin_validation, b_origin_validation))
+                        print("540")
                         origin_result = utils.bce(a_origin_validation, b_origin_validation)
 
                     else:
                         print("result:", utils.bce(a_origin, b_origin), "non")
                         print("result:", utils.bce(a_origin_validation, b_origin_validation), "non")
+                        print("546")
 
                     j+=1
 
