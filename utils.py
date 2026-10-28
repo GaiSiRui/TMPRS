@@ -76,7 +76,7 @@ def max_with_source(x, y):
         return y
 
 def workers(name, pool_list, assoc_combine, threshold, bim, fam, args, origin_PRS, the_type):
-    PRS = np.zeros_like(fam.loc[:, "status"])
+    PRS = np.zeros(len(origin_PRS), dtype=float)
     print("80")
     for row in assoc_combine.itertuples():
         if isinstance(row.non_additive_point, float) and row.non_additive_point * 100 > float(pool_list):
@@ -192,13 +192,27 @@ def R2(b):
     return r2
 
 def bce(a, b):
+    # 输入非法时返回 None，绝不把 None / object 数组送进 roc_curve
+    # （object 数组里的 None 会让 sklearn 内部比较抛 "'>' not supported between ..."）
+    a = np.asarray(a, dtype=float)   # None -> nan；非数值字符串在这里明确报错
+    b = np.asarray(b, dtype=float)
+    if a.shape != b.shape or a.size == 0:
+        return None
+    mask = np.isfinite(a) & np.isfinite(b)   # 联合掩码，保证 a/b 仍一一对应
+    a, b = a[mask], b[mask]
+    labels = set(np.unique(a).tolist())
+    if len(labels) < 2 or 2 not in labels:   # 单类标签或没有 pos_label=2 时 AUC 无定义
+        return None
     fpr, tpr, thresholds = metrics.roc_curve(a, b, pos_label = 2)
-    return(metrics.auc(fpr, tpr))
+    return float(metrics.auc(fpr, tpr))
 
 def preprocess_for_roc(a, b):
-    a = np.asarray(a)
-    b = np.asarray(b)
-    mask = ~(np.isnan(a) | np.isnan(b))
+    # 强制转 float：None/NA -> nan；同时剔除 nan 与 ±inf（HAM 在 p=1 时可能算出 inf）
+    a = np.asarray(a, dtype=float)
+    b = np.asarray(b, dtype=float)
+    if a.shape != b.shape:
+        raise ValueError("preprocess_for_roc: shape mismatch %s vs %s" % (a.shape, b.shape))
+    mask = np.isfinite(a) & np.isfinite(b)
     a_clean = a[mask]
     b_clean = b[mask]
     return a_clean, b_clean

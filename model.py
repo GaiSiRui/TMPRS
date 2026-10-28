@@ -481,8 +481,8 @@ def after_summary(args, assoc_combine):
             origin_PRS_validation = []
 
             for k in np.arange(args.begin_site, args.end_site, args.site_step):
-                origin_PRS.append(np.zeros_like(fam.loc[:, "status"]))
-                origin_PRS_validation.append(np.zeros_like(fam_validation.loc[:, "status"]))
+                origin_PRS.append(np.zeros(len(fam), dtype=float))
+                origin_PRS_validation.append(np.zeros(len(fam_validation), dtype=float))
                 print("486")
 
             origin_result = 0.5
@@ -523,19 +523,27 @@ def after_summary(args, assoc_combine):
                     has_nan_a = bool(np.any(pd.isna(a_origin)))
                     has_nan_b = bool(np.any(pd.isna(b_origin)))
 
-                    if has_nan_a and has_nan_b:
+                    # 各算一次 AUC：所有比较都作用在 float 上，None 只用来决定"跳过"
+                    auc_origin = utils.bce(a_origin, b_origin)
+                    auc_validation = utils.bce(a_origin_validation, b_origin_validation)
+
+                    if auc_origin is None or auc_validation is None:
+                        print("result: invalid (empty/single-class/non-finite), skip",
+                              "dtype:", getattr(a_origin, "dtype", None), getattr(b_origin, "dtype", None))
+
+                    elif has_nan_a and has_nan_b:
                         print("534")
                         print("result: non")
 
-                    elif utils.bce(a_origin_validation, b_origin_validation) > origin_result:
-                        print("result:", utils.bce(a_origin, b_origin))
-                        print("result:", utils.bce(a_origin_validation, b_origin_validation))
+                    elif auc_validation > origin_result:
+                        print("result:", auc_origin)
+                        print("result:", auc_validation)
                         print("540")
-                        origin_result = utils.bce(a_origin_validation, b_origin_validation)
+                        origin_result = auc_validation
 
                     else:
-                        print("result:", utils.bce(a_origin, b_origin), "non")
-                        print("result:", utils.bce(a_origin_validation, b_origin_validation), "non")
+                        print("result:", auc_origin, "non")
+                        print("result:", auc_validation, "non")
                         print("546")
 
                     j+=1
