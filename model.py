@@ -98,7 +98,7 @@ def before_summary(args):
             assoc_add.to_csv(file, sep = "\t", index=False)
 
             if args.clump == "False":
-                    os.system("plink --bfile " + args.input_file + " --keep " + args.input_file + ".list --clump-p1 1 --clump-r2 0.1 --clump-kb 250 --clump " + args.input_file + ".assoc.add --clump-snp-field SNP --clump-field P --out " + args.input_file + ".clumped")
+                    os.system("plink --bfile " + args.input_file + " --keep " + args.input_file + ".list --clump-p1 1 --clump-r2 0.1 --clump-kb 250 --clump " + args.input_file + ".assoc.add --clump-snp-field SNP --clump-field P --out " + args.input_file)
 
             plink_clumped = pd.read_csv(args.input_file + ".clumped", sep=r'\s+')
             assoc_add = assoc_add[assoc_add['P'] < 0.5]
@@ -132,7 +132,7 @@ def before_summary(args):
             assoc_logistic = pd.concat([assoc_dom, assoc_rec, assoc_add])
 
             if args.clump == "False":
-                    os.system("plink --bfile " + args.input_file + " --keep " + args.input_file + ".list --clump-p1 1 --clump-r2 0.1 --clump-kb 250 --clump " + args.input_file + ".assoc.logistic  --clump-snp-field SNP --clump-field P --out " + args.input_file + ".clumped")
+                    os.system("plink --bfile " + args.input_file + " --keep " + args.input_file + ".list --clump-p1 1 --clump-r2 0.1 --clump-kb 250 --clump " + args.input_file + ".assoc.logistic  --clump-snp-field SNP --clump-field P --out " + args.input_file)
 
             plink_clumped = pd.read_csv(args.input_file + ".clumped", sep=r'\s+')
             clumped_snps = plink_clumped['SNP'].tolist()
@@ -186,7 +186,7 @@ def before_summary(args):
             assoc_add.to_csv(file, sep = "\t", index=False)
 
             if args.clump == "False":
-                    os.system("plink --bfile " + args.input_file + " --keep " + args.input_file + ".list --clump-p1 1 --clump-r2 0.1 --clump-kb 250 --clump " + args.input_file + ".assoc.add --clump-snp-field SNP --clump-field P --out " + args.input_file + ".clumped")
+                    os.system("plink --bfile " + args.input_file + " --keep " + args.input_file + ".list --clump-p1 1 --clump-r2 0.1 --clump-kb 250 --clump " + args.input_file + ".assoc.add --clump-snp-field SNP --clump-field P --out " + args.input_file)
 
             plink_clumped = pd.read_csv(args.input_file + ".clumped", sep=r'\s+')
             assoc_add = assoc_add[assoc_add['P'] < 0.5]
@@ -220,7 +220,7 @@ def before_summary(args):
             assoc_linear = pd.concat([assoc_dom, assoc_rec, assoc_add])
 
             if args.clump == "False":
-                os.system("plink --bfile " + args.input_file + " --keep " + args.input_file + ".list --clump-p1 1 --clump-r2 0.1 --clump-kb 250 --clump " + args.input_file + ".assoc.linear  --clump-snp-field SNP --clump-field P --out " + args.input_file + ".clumped")
+                os.system("plink --bfile " + args.input_file + " --keep " + args.input_file + ".list --clump-p1 1 --clump-r2 0.1 --clump-kb 250 --clump " + args.input_file + ".assoc.linear  --clump-snp-field SNP --clump-field P --out " + args.input_file)
 
             plink_clumped = pd.read_csv(args.input_file + ".clumped", sep=r'\s+')
             clumped_snps = plink_clumped['SNP'].tolist()
